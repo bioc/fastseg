@@ -1,11 +1,12 @@
-importMethodsFrom(GenomicRanges, seqnames)
+import(BiocGenerics)
 importMethodsFrom(IRanges, colnames, "colnames<-", diff,
                   elementMetadata, lapply, mean, ncol, nrow,
-                  Rle, sort, width)
+                  Rle, sort, width, as.data.frame)
+importMethodsFrom(GenomicRanges, seqnames)
+importFrom(IRanges, IRanges)
 importFrom(GenomicRanges, GRanges)
 importFrom(graphics, lines, plot)
 importFrom(stats, median, quantile, sd)
-importFrom(IRanges, IRanges)
 
 export(fastseg)
 export(toDNAcopyObj)

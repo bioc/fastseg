@@ -23,10 +23,10 @@ Description: fastseg implements a very fast and efficient
     and that a dynamic programming approach is used for
     calculation of the segments' first and higher order
     moments.
-Version: 1.1.0
+Version: 1.1.1
 URL: http://www.bioinf.jku.at/software/fastseg/fastseg.html
-Depends: R (>= 2.13), GenomicRanges
-Imports: graphics, stats, IRanges
+Depends: R (>= 2.13), methods, BiocGenerics (>= 0.1.0), GenomicRanges
+Imports: methods, graphics, stats, BiocGenerics, IRanges
 Suggests: DNAcopy, oligo
 biocViews: Classification, CopyNumberVariants
 Collate: 'roxygen.R' 'toDnaCopy.R' 'fastseg.R'

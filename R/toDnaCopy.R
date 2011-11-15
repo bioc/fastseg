@@ -130,7 +130,7 @@ toDNAcopyObj <- function(segData, chrom, maploc, genomdat, sampleNames) {
     attr(zzz, "data.type") <- data.type
     class(zzz) <- c("CNA", "data.frame")
 
-    segDataTmp <- IRanges::as.data.frame(segData)
+    segDataTmp <- as.data.frame(segData)
 
 	colnames(segDataTmp)[1:3] <- c("chrom", "loc.start", "loc.end")
 	#segDataTmp$chrom <- as.numeric(segDataTmp$chrom)
