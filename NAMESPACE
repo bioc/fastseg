@@ -1,13 +1,4 @@
-import(BiocGenerics)
-importMethodsFrom(IRanges, colnames, "colnames<-", diff,
-                  elementMetadata, lapply, mean, ncol, nrow,
-                  Rle, sort, width, as.data.frame)
-importMethodsFrom(GenomicRanges, seqnames)
-importFrom(IRanges, IRanges)
-importFrom(GenomicRanges, GRanges)
-importFrom(graphics, lines, plot)
-importFrom(stats, median, quantile, sd)
-
 export(fastseg)
+export(segPlot)
 export(toDNAcopyObj)
 useDynLib(fastseg)

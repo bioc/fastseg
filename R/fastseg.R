@@ -16,14 +16,12 @@
 #' @param segMedianT A numeric vector of length two with the thresholds of 
 #' segments' median values that are considered as significant. Only segments
 #' with a median above the first or below the second value are kept in a final
-#' merging step. If missing the algorithm will try to find a reasonable value
-#' by using z-scores. (Default "missing".)
+#' merging step. (Default = "missing").
 #' @param minSeg The minimal segment length. (Default = 4). 
 #' @param eps Minimal difference between consecutive values. Only consecutive 
 #' values with a minimium difference of "eps" are tested. This makes the 
 #' segmentation algorithm even faster. If all values should be tested "eps" can
-#' be set to zero. If missing the algorithm will try to find a reasonable value
-#' by using quantiles. (Default "missing".)
+#' be set to zero. (Default = 0).
 #' @param delta Segment extension parameter. If delta consecutive extensions
 #' of the left and the right segment do not lead to a better p-value the testing
 #' is stopped. (Default = 5).
@@ -45,7 +43,7 @@
 #' @author Guenter Klambauer \email{klambauer@@bioinf.jku.at}
 #' @noRd
 segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4, 
-		eps, delta = 5, maxInt = 10, squashing = 0, cyberWeight = 10, 
+		eps=0, delta = 5, maxInt = 10, squashing = 0, cyberWeight = 10, 
         segPlot = TRUE, ...) {
     
     if (missing("segMedianT")) {
@@ -76,7 +74,7 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 				as.integer(squashing), as.double(cyberWeight), 0.15)
 	}
 	
-	if (alpha > 1) {
+	if (alpha >= 1) {
 		alpha <- as.integer(alpha)
 		brkptsInit <- sort(order(res$stat,decreasing=TRUE)[1:alpha])
 	} else if (alpha < 1 & alpha > 0) {
@@ -108,13 +106,13 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 	if (all(segMedianT==0)) {
 		
 		#message("No merging of segments.")
-		ir <- IRanges(df$start, df$end)
+		ir <- IRanges::IRanges(df$start, df$end)
 		ir <- ir[which(width(ir)>=minSeg)]
 		
 		
-		irAll <- IRanges(1, length(x))
-		segsFinal <- as.data.frame(sort(
-						c(ir, setdiff(irAll, ir))))
+		irAll <- IRanges::IRanges(1, length(x))
+		segsFinal <- IRanges::as.data.frame(IRanges::sort(
+						c(ir, IRanges::setdiff(irAll, ir))))
 		
 		if (segPlot) plot(x, pch=15, cex=0.5, ...)
 		nbrOfSegs <- nrow(segsFinal)
@@ -139,22 +137,22 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 		
 	} else {
 		dfAmp <- df[which(df$median > segMedianT[1]), ]
-		irAmp <- IRanges(dfAmp$start, dfAmp$end)
-		irAmp <- reduce(irAmp)
+		irAmp <- IRanges::IRanges(dfAmp$start, dfAmp$end)
+		irAmp <- IRanges::reduce(irAmp)
 		
 		dfLoss <- df[which(df$median < segMedianT[2]), ]
-		irLoss <- IRanges(dfLoss$start, dfLoss$end)
-		irLoss <- reduce(irLoss)
+		irLoss <- IRanges::IRanges(dfLoss$start, dfLoss$end)
+		irLoss <- IRanges::reduce(irLoss)
 		
-		ir <- sort(c(irAmp, irLoss))
+		ir <- IRanges::sort(c(irAmp, irLoss))
         
 		ir <- ir[which(width(ir)>=minSeg)]
 		
 		rm(irAmp, irLoss, dfAmp, dfLoss)    
 		
-		irAll <- IRanges(1, length(x))
-		segsFinal <- as.data.frame(sort(
-						c(ir, setdiff(irAll, ir))))
+		irAll <- IRanges::IRanges(1, length(x))
+		segsFinal <- IRanges::as.data.frame(IRanges::sort(
+						c(ir, IRanges::setdiff(irAll, ir))))
 		
 		if (segPlot) plot(x, pch=15, cex=0.5, ...)
 		nbrOfSegs <- nrow(segsFinal)
@@ -249,13 +247,6 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 #' colnames(elementMetadata(gr)) <- samplenames
 #' res <- fastseg(gr)
 #' 
-#' segres <- toDNAcopyObj(
-#'         segData     = res, 
-#'         chrom       = as.character(seqnames(gr)), 
-#'         maploc      = as.numeric(start(gr)), 
-#'         genomdat    = data, 
-#'         sampleNames = samplenames)
-#' 
 #' ## with one individual
 #' gr2 <- gr
 #' data2 <- as.matrix(data[, 1])
@@ -263,25 +254,13 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 #' elementMetadata(gr2) <- data2
 #' res <- fastseg(gr2)
 #' 
-#' segres <- toDNAcopyObj(
-#'         segData     = res, 
-#'         chrom       = as.character(seqnames(gr)), 
-#'         maploc      = as.numeric(start(gr)), 
-#'         genomdat    = as.matrix(data2), 
-#'         sampleNames = unique(elementMetadata(res)$ID))
-#' 
 #' 
 #' ###########################################################
 #' ## vector
 #' ###########################################################
 #' data2 <- data[, 1]
 #' res <- fastseg(data2)
-#' segres <- toDNAcopyObj(
-#'         segData     = res, 
-#'         chrom       = rep(1, length(data2)), 
-#'         maploc      = 1:length(data2), 
-#'         genomdat    = as.matrix(data2), 
-#'         sampleNames = "sample1")
+#' 
 #' 
 #' 
 #' ###########################################################
@@ -289,12 +268,6 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 #' ###########################################################
 #' data2 <- data[1:400, ]
 #' res <- fastseg(data2)
-#' segres <- toDNAcopyObj(
-#'         segData     = res, 
-#'         chrom       = rep(1, nrow(data2)), 
-#'         maploc      = 1:nrow(data2), 
-#'         genomdat    = as.matrix(data2), 
-#'         sampleNames = colnames(data2))
 #' 
 #' 
 #' ###########################################################
@@ -314,22 +287,9 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 #' sampleNames(eSet) <- samplenames
 #' res <- fastseg(eSet)
 #' 
-#' segres <- toDNAcopyObj(
-#'         segData     = res, 
-#'         chrom       = rep(1, nrow(data)), 
-#'         maploc      = maploc, 
-#'         genomdat    = as.matrix(data), 
-#'         sampleNames = colnames(data))
-#' 
-#' 
-#' #####################################################################
-#' ### plot the segments
-#' #####################################################################
-#' 
-#' library(DNAcopy)
-#' plot(segres, xmaploc=TRUE)
+
 fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4, 
-        eps = 0.01, delta = 5, maxInt = 40, squashing = 0, cyberWeight = 10, ...) {
+        eps = 0, delta = 5, maxInt = 40, squashing = 0, cyberWeight = 10, ...) {
     
     if (inherits(x, "ExpressionSet")) {
         
@@ -376,7 +336,7 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
                     num.mark = res$num.mark, 
                     seg.mean = res$mean, 
                     startRow = res$start, 
-                    endRow = res$end)
+                    endRow = res$end,stringsAsFactors=FALSE)
             
             res02[[seq]] <- resX
             
@@ -386,16 +346,16 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
         finalRes <- GRanges(seqnames = Rle(res03$chrom),
                 ranges   = IRanges(start = res03$loc.start, end = res03$loc.end),
                 ID = res03$ID, 
-                num.mark  = res03$loc.end - res03$start + 1,
+                num.mark  = res03$num.mark,
                 seg.mean  = res03$seg.mean,
-                startRow  = res03$loc.start,
-                endRow    = res03$loc.end)
+                startRow  = res03$startRow,
+                endRow    = res03$endRow)
                 
     } else if (inherits(x, "GRanges")) {
-        if (!all(lapply(elementMetadata(x), mode) == "numeric")) {
-            stop("All elementMetadata of GRanges object needs to be numeric!")
-        }
-        
+#        if (!all(lapply(IRanges::elementMetadata(x), mode) == "numeric")) {
+#            stop("All elementMetadata of GRanges object needs to be numeric!")
+#		}
+#        
         y <- split(x, as.character(seqnames(x)))
 		
         nbrOfSeq <- length(y)
@@ -414,14 +374,14 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
                 resTmp$sample <- sample
                 res[[sampleIdx]] <- resTmp
             }
-            
+			
             res <- do.call("rbind", res)
 
-            res$num.mark <- res$end - res$start + 1
+            res$num.mark <- res$end - res$start
 
-            chrom <- as.numeric(seqnames(x)[1])
+            chrom <- as.character(seqnames(x)[1])
             start <- start(x)[res$start]
-            end <- start(x)[res$end] + width(x)[res$end] 
+            end <- start(x)[res$end] + width(x)[res$end]-1
             
             resX <- data.frame(
                     ID = res$sample, 
@@ -431,12 +391,12 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
                     num.mark = res$num.mark, 
                     seg.mean = res$mean, 
                     startRow = res$start, 
-                    endRow = res$end)
-            
+                    endRow = res$end,stringsAsFactors=FALSE)
+            resX <- resX[order(resX$chrom,resX$loc.start), ]
             res02[[seq]] <- resX
             
         }
-        
+		
         res03 <- do.call("rbind", res02)
 
         finalRes <- GRanges(seqnames = Rle(res03$chrom),
@@ -491,7 +451,7 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
     
     finalRes <- finalRes[order(
                     as.character(elementMetadata(finalRes)$ID), 
-                    as.numeric(as.character(seqnames(finalRes))), 
+                    (as.character(seqnames(finalRes))), 
                     as.numeric(start(finalRes))), ]
     
     return(finalRes)

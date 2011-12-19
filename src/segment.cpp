@@ -36,8 +36,8 @@ extern "C" SEXP segment(SEXP xS, SEXP epsS, SEXP deltaS, SEXP maxIntS,
 	double *partialSumValues=(double *) R_alloc(n, sizeof(double));
 	double *partialSumSquares=(double *) R_alloc(n, sizeof(double));
 	double *pValue=(double *) R_alloc(n, sizeof(double));
-	long *leftBorders=(long *) R_alloc(n, sizeof(long));
-	long *rightBorders=(long *) R_alloc(n, sizeof(long));
+	//long *leftBorders=(long *) R_alloc(n, sizeof(long));
+	//long *rightBorders=(long *) R_alloc(n, sizeof(long));
 
 	SEXP x_RET;
 	PROTECT(x_RET = allocVector(REALSXP, n));
@@ -47,9 +47,9 @@ extern "C" SEXP segment(SEXP xS, SEXP epsS, SEXP deltaS, SEXP maxIntS,
 	PROTECT(savedStatistic_RET = allocVector(REALSXP, n));
 	double *savedStatistic=REAL(savedStatistic_RET);
 
-	SEXP hist_RET;
-	PROTECT(hist_RET = allocVector(REALSXP, n));
-	double *hist=REAL(hist_RET);
+	//SEXP hist_RET;
+	//PROTECT(hist_RET = allocVector(REALSXP, n));
+	//double *hist=REAL(hist_RET);
 
 	SEXP leftright_RET;
 	PROTECT(leftright_RET = allocVector(INTSXP, n));
@@ -84,17 +84,18 @@ extern "C" SEXP segment(SEXP xS, SEXP epsS, SEXP deltaS, SEXP maxIntS,
 		//Rprintf("PartialSumValues: %lf\n", partialSumValues[i]);
 		//Rprintf("PartialSumSquares: %lf\n", partialSumSquares[i]);
 
-		hist[i]=2;
+		//hist[i]=2;
 
 	}
 	globalVariance = M2/(n-1);
 
 	if (squashing > 0){
-		beta = -log(2.0/1.8-1)/((double) squashing * sqrt(globalVariance));
+		//beta = -log(2.0/1.8-1)/((double) squashing * sqrt(globalVariance));
 		//Rprintf("Beta: %lf\n", beta);
+		beta = (double) squashing;
 
 		for (i=0;i<n;i++){
-			xx[i]=(2/(1+exp(-1/beta*((x[i]-globalMean)/sqrt(globalVariance))))-1);
+			x[i]=(2/(1+exp(-1/beta*((x[i]-globalMean)/sqrt(globalVariance))))-1);
 		}
 		globalMean=0;
 		globalSd=0;
@@ -120,9 +121,9 @@ extern "C" SEXP segment(SEXP xS, SEXP epsS, SEXP deltaS, SEXP maxIntS,
 		//Rprintf("Squashing values.\n");
 
 	} else{
-		for (i=0;i<n;i++){
-			xx[i]=x[i];
-		}
+		// for (i=0;i<n;i++){
+		//	xx[i]=x[i];
+		//}
 		//Rprintf("Using original values.\n");
 
 	}
@@ -236,10 +237,10 @@ extern "C" SEXP segment(SEXP xS, SEXP epsS, SEXP deltaS, SEXP maxIntS,
 
 			//starts[i] = i;
 			pValue[i]=maxPValue;
-			leftBorders[i]=i-((long) maxIdx)-1;
-			rightBorders[i]=i+((long) maxIdx)+1;
-			hist[leftBorders[i]]++;
-			hist[rightBorders[i]]++;
+			//leftBorders[i]=i-((long) maxIdx)-1;
+			//rightBorders[i]=i+((long) maxIdx)+1;
+			//hist[leftBorders[i]]++;
+			//hist[rightBorders[i]]++;
 
 			i=i+1;
 		} else{
@@ -269,32 +270,32 @@ extern "C" SEXP segment(SEXP xS, SEXP epsS, SEXP deltaS, SEXP maxIntS,
 				}
 			}
 
-			hist[i]=(savedStatistic[i]*log2(hist[i]))/2;
+			//hist[i]=(savedStatistic[i]*log2(hist[i]))/2;
 			i=i+1;
 		}
 	} else{
 		for (i=0;i<n;i++){
 			savedStatistic[i]=pValue[i];
-			hist[i]=(savedStatistic[i]*log2(hist[i]))/2;
+			//hist[i]=(savedStatistic[i]*log2(hist[i]))/2;
 
 		}
 	}
 
 	SEXP namesRET;
-	PROTECT(namesRET = allocVector(STRSXP, 4));
+	PROTECT(namesRET = allocVector(STRSXP, 3));
 	SET_STRING_ELT(namesRET, 0, mkChar("x"));
 	SET_STRING_ELT(namesRET, 1, mkChar("stat"));
-	SET_STRING_ELT(namesRET, 2, mkChar("stat2"));
+	//SET_STRING_ELT(namesRET, 2, mkChar("stat2"));
 	SET_STRING_ELT(namesRET, 3, mkChar("leftright"));
 
 	SEXP RET;
-	PROTECT(RET = allocVector(VECSXP, 4));
+	PROTECT(RET = allocVector(VECSXP, 3));
 	SET_VECTOR_ELT(RET, 0, x_RET);
 	SET_VECTOR_ELT(RET, 1, savedStatistic_RET);
-	SET_VECTOR_ELT(RET, 2, hist_RET);
+	//SET_VECTOR_ELT(RET, 2, hist_RET);
 	SET_VECTOR_ELT(RET, 3, leftright_RET);
 	setAttrib(RET, R_NamesSymbol, namesRET);
-	UNPROTECT(6);
+	UNPROTECT(5);
 	return(RET);
 
 }
