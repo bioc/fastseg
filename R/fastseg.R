@@ -16,13 +16,12 @@
 #' @param segMedianT A numeric vector of length two with the thresholds of 
 #' segments' median values that are considered as significant. Only segments
 #' with a median above the first or below the second value are kept in a final
-#' merging step. (Default = 0).
+#' merging step. (Default = "missingS).
 #' @param minSeg The minimal segment length. (Default = 4). 
 #' @param eps Minimal difference between consecutive values. Only consecutive 
 #' values with a minimium difference of "eps" are tested. This makes the 
 #' segmentation algorithm even faster. If all values should be tested "eps" can
-#' be set to zero. If missing the algorithm will try to find a reasonable value
-#' by using quantiles. (Default "missing").
+#' be set to zero. (Default = 0).
 #' @param delta Segment extension parameter. If delta consecutive extensions
 #' of the left and the right segment do not lead to a better p-value the testing
 #' is stopped. (Default = 5).
