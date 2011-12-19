@@ -4,7 +4,7 @@
 on the cyber t-test.}
 \usage{
   fastseg(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
-  eps = 0.01, delta = 5, maxInt = 40, squashing = 0,
+  eps = 0, delta = 5, maxInt = 40, squashing = 0,
   cyberWeight = 10, ...)
 }
 \arguments{

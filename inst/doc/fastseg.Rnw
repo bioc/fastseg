@@ -152,12 +152,7 @@ colnames(elementMetadata(gr)) <- samplenames
 res <- fastseg(gr)
 head(res)
 
-segres <- toDNAcopyObj(
-        segData     = res, 
-        chrom       = as.character(seqnames(gr)), 
-        maploc      = as.numeric(start(gr)), 
-        genomdat    = data, 
-        sampleNames = samplenames)
+
 
 ## with one individual
 gr2 <- gr
@@ -167,12 +162,6 @@ elementMetadata(gr2) <- data2
 res <- fastseg(gr2)
 head(res)
 
-segres <- toDNAcopyObj(
-        segData     = res, 
-        chrom       = as.character(seqnames(gr)), 
-        maploc      = as.numeric(start(gr)), 
-        genomdat    = as.matrix(data2), 
-        sampleNames = unique(elementMetadata(res)$ID))
 @
 
 \subsubsection{ExpressionSet objects}
@@ -183,21 +172,14 @@ assayData(eSet) <- list(intensity=data)
 
 featureData(eSet) <- new("AnnotatedDataFrame", 
         data=data.frame(
-                chrom = chrom,
+                chrom = paste("chr",chrom,sep=""),
                 start = maploc, 
-                end   = maploc))
+                end   = maploc,stringsAsFactors=FALSE))
 phenoData(eSet) <- new("AnnotatedDataFrame", 
         data=data.frame(samples=samplenames))
 sampleNames(eSet) <- samplenames
 res <- fastseg(eSet)
 head(res)
-
-segres <- toDNAcopyObj(
-        segData     = res, 
-        chrom       = rep(1, nrow(data)), 
-        maploc      = maploc, 
-        genomdat    = as.matrix(data), 
-        sampleNames = colnames(data))
 @
 
 \subsubsection{Vector}
@@ -206,12 +188,7 @@ data2 <- data[, 1]
 res <- fastseg(data2)
 head(res)
 
-segres <- toDNAcopyObj(
-        segData     = res, 
-        chrom       = rep(1, length(data2)), 
-        maploc      = 1:length(data2), 
-        genomdat    = as.matrix(data2), 
-        sampleNames = "sample1")
+
 @
 
 \subsubsection{Matrix}
@@ -219,13 +196,6 @@ segres <- toDNAcopyObj(
 data2 <- data[1:400, ]
 res <- fastseg(data2)
 head(res)
-
-segres <- toDNAcopyObj(
-        segData     = res, 
-        chrom       = rep(1, nrow(data2)), 
-        maploc      = 1:nrow(data2), 
-        genomdat    = as.matrix(data2), 
-        sampleNames = colnames(data2))
 @
 
 \subsection{Plotting the segmentation results}
@@ -240,21 +210,13 @@ gr <- GRanges(seqnames=chrom,
 elementMetadata(gr) <- data
 colnames(elementMetadata(gr)) <- samplenames
 res <- fastseg(gr,segMedianT=0.2)
-
-segres <- toDNAcopyObj(
-        segData     = res, 
-        chrom       = as.character(seqnames(gr)), 
-        maploc      = as.numeric(start(gr)), 
-        genomdat    = data, 
-        sampleNames = samplenames)
 @
 
 The plotting is done via the {\tt plot} function of {\tt DNAcopy}:
 
 \begin{center}
 <<fig=TRUE>>=
-library(DNAcopy)
-plot(segres, plot.type="w", xmaploc=TRUE)
+segPlot(gr,res, plot.type="w")
 @
 \end{center} 
 
@@ -262,7 +224,7 @@ Or alternatively:
 
 \begin{center}
 <<fig=TRUE>>=
-plot(segres, plot.type="s", xmaploc=TRUE)
+segPlot(gr,res, plot.type="s")
 @
 \end{center} 
 
@@ -281,14 +243,8 @@ system.time(res <- fastseg(fastsegData))
 @
 
 \begin{center}
-<<echo=FALSE,fig=TRUE>>=
-segres <- toDNAcopyObj(
-        segData     = res, 
-        chrom       = rep(1, length(fastsegData)), 
-        maploc      = 1:length(fastsegData), 
-        genomdat    = as.matrix(fastsegData), 
-        sampleNames = "sample1")
-plot(segres, plot.type="w", xmaploc=TRUE)
+<<echo=TRUE,fig=TRUE>>=
+segPlot(fastsegData,res, plot.type="w")
 @
 \end{center} 
 
@@ -299,7 +255,7 @@ system.time(res2 <- DNAcopy::segment(cna))
 @
 
 \begin{center}
-<<echo=FALSE,fig=TRUE>>=
+<<echo=TRUE,fig=TRUE>>=
 plot(res2, plot.type="w", xmaploc=TRUE)
 @
 \end{center} 
