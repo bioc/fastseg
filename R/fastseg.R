@@ -109,10 +109,10 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 		ir <- IRanges::IRanges(df$start, df$end)
 		ir <- ir[which(width(ir)>=minSeg)]
 		
-		
-		irAll <- IRanges::IRanges(1, length(x))
-		segsFinal <- IRanges::as.data.frame(IRanges::sort(
-						c(ir, IRanges::setdiff(irAll, ir))))
+		#browser()
+		irAll <- IRanges(1, length(x))
+        
+		segsFinal <- as.data.frame(sort(c(ir, setdiff(irAll, ir))))
 		
 		if (segPlot) plot(x, pch=15, cex=0.5, ...)
 		nbrOfSegs <- nrow(segsFinal)
@@ -151,8 +151,18 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 		rm(irAmp, irLoss, dfAmp, dfLoss)    
 		
 		irAll <- IRanges::IRanges(1, length(x))
-		segsFinal <- IRanges::as.data.frame(IRanges::sort(
-						c(ir, IRanges::setdiff(irAll, ir))))
+        
+        ##############################################
+#        browser()
+#        showMethods("setdiff")
+#        selectMethod("setdiff", c("IRanges", "IRanges"))
+#            solved by:
+#            importFrom(IRanges,sort)
+#            importFrom(IRanges,as.data.frame)
+#            importFrom(BiocGenerics,setdiff)
+        ##############################################
+
+		segsFinal <- as.data.frame(sort(c(ir, setdiff(irAll, ir))))
 		
 		if (segPlot) plot(x, pch=15, cex=0.5, ...)
 		nbrOfSegs <- nrow(segsFinal)
@@ -350,7 +360,7 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
                 seg.mean  = res03$seg.mean,
                 startRow  = res03$startRow,
                 endRow    = res03$endRow)
-                
+        
     } else if (inherits(x, "GRanges")) {
 #        if (!all(lapply(IRanges::elementMetadata(x), mode) == "numeric")) {
 #            stop("All elementMetadata of GRanges object needs to be numeric!")
@@ -359,7 +369,7 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
         y <- split(x, as.character(seqnames(x)))
 		
         nbrOfSeq <- length(y)
-     
+             
         res02 <- list()
         for (seq in seq_len(nbrOfSeq)) {
             x <- y[[seq]]
@@ -376,9 +386,9 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
             }
 			
             res <- do.call("rbind", res)
-
+            
             res$num.mark <- res$end - res$start
-
+            
             chrom <- as.character(seqnames(x)[1])
             start <- start(x)[res$start]
             end <- start(x)[res$end] + width(x)[res$end]-1
@@ -398,7 +408,7 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
         }
 		
         res03 <- do.call("rbind", res02)
-
+        
         finalRes <- GRanges(seqnames = Rle(res03$chrom),
                 ranges   = IRanges(start = res03$loc.start, end = res03$loc.end),
                 ID = res03$ID, 
@@ -406,7 +416,7 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
                 seg.mean  = res03$seg.mean,
                 startRow  = res03$startRow,
                 endRow    = res03$endRow)
-
+        
     } else if (is.matrix(x)) {
         nbrOfSamples <- ncol(x)
         samples <- colnames(x)
@@ -418,9 +428,9 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
                     segPlot = FALSE, ...)$finalSegments
             segsTmp[[i]]$sample <- samples[i]
         }
-
+        
         res02 <- do.call("rbind", segsTmp)
-
+        
         finalRes <- GRanges(seqnames = Rle(rep(1, nrow(res02))),
                 ranges   = IRanges(start = res02$start, end = res02$end),
                 ID = res02$sample, 
@@ -434,7 +444,7 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
         res02 <- segmentGeneral(x, type, alpha, segMedianT, minSeg, 
                 eps, delta, maxInt, squashing, cyberWeight, 
                 segPlot = FALSE, ...)$finalSegments
-       
+               
         finalRes <- GRanges(seqnames = Rle(rep(1, nrow(res02))),
                 ranges   = IRanges(start = res02$start, end = res02$end),
                 ID = rep("sample1", nrow(res02)), 
