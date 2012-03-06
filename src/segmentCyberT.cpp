@@ -11,40 +11,24 @@
 
 using namespace std;
 
-// eps    = Werte mit Absolutbetrag kleiner eps kommen als Breakpoint nicht
-//			in Frage.
-//
-// deltaS = Anzahl Segmente, die der Segmentierer noch anschaut, auch wenn
-//          die p Werte wieder schlechter werden; Suggested=3-5;
-// maxIntS = maximale Laenge des linken und rechten Fensters um jeden Wert.
-//           keine Beschraenkung fuer die maximale Laenge eines Segments
-// minSegS = minimale Laenge des linken und rechten Fensters um jeden Wert.
-//           Gleichzeitig minimale Segmentlaenge!!!
-// squashingS = 0= kein Squashing; 2-4= ab welcher sd die Werte stark zusammen-
-//				gedrueckt werden.
-// cyberWeightS = Anzahl der gedachten zusätzlichen Datenpunkte pro Segment oder
-//				  auch Stärke des Priors. Muss kein Integer sein. (0-100)
-// minVarPercS = minimale Varianz als Bruchteil der globalen Varianz; (0.01-0.25)
-
-// RETURN VALUES
-// x = Original oder ge-squashte Werte
-// stat = -log P values vom t-test
-// stat2 = ein weiterer möglicher call. Wertebereich muesste etwa wie bei
-// 			stat sein.
 
 extern "C" SEXP segmentCyberT(SEXP xS, SEXP epsS, SEXP maxSDS, SEXP deltaS, SEXP maxIntS,
-		SEXP minSegS, SEXP squashingS, SEXP cyberWeightS, SEXP minVarPercS) {
+		SEXP minSegS, SEXP squashingS, SEXP cyberWeightS) {
 	int j, d, ll;
 	long n=LENGTH(xS);
 	long i;
+	long maxIdx;
 
 	double eps = REAL(epsS)[0];
 	//Rprintf("eps: %lf\n", eps);
 
 	double cyberWeight = REAL(cyberWeightS)[0];
 	//Rprintf("cyberWeight: %lf\n", cyberWeight);
+	if (cyberWeight < 0.01){
+		cyberWeight = 0.01;
+	}
 
-	double minVarPerc = REAL(minVarPercS)[0];
+	//double minVarPerc = REAL(minVarPercS)[0];
 	//Rprintf("minVarPerc: %lf\n", minVarPerc);
 
 	int maxSD= INTEGER(maxSDS)[0];
@@ -75,7 +59,7 @@ extern "C" SEXP segmentCyberT(SEXP xS, SEXP epsS, SEXP maxSDS, SEXP deltaS, SEXP
 	double globalMean,globalSd,diff,M2,globalVariance;
 	double oldStatistic,meanLeft,meanRight,varLeft,varRight;
 	double newStatistic,meanDiff,maxStatistic,DOF,a,b,eps1;
-	double newPValue, maxPValue,oldPValue,minimumVariance,maxIdx;
+	double newPValue, maxPValue,oldPValue,minimumVariance;
 	double newStatisticBptLeft,newStatisticBptRight,beta,nn;
 
 
@@ -103,7 +87,7 @@ extern "C" SEXP segmentCyberT(SEXP xS, SEXP epsS, SEXP maxSDS, SEXP deltaS, SEXP
 
 	}
 	globalVariance = M2/(n-1);
-	minimumVariance= globalVariance*minVarPerc;
+	//minimumVariance= 0;
 
 	if (squashing > 0){
 		beta = -log(2.0/1.8-1)/((double) squashing * sqrt(globalVariance));
@@ -133,7 +117,7 @@ extern "C" SEXP segmentCyberT(SEXP xS, SEXP epsS, SEXP maxSDS, SEXP deltaS, SEXP
 
 		}
 		globalVariance = M2/(n-1);
-		minimumVariance= globalVariance*minVarPerc;
+		//minimumVariance= 0;
 		Rprintf("Squashing values.\n");
 
 	} else{
@@ -144,11 +128,17 @@ extern "C" SEXP segmentCyberT(SEXP xS, SEXP epsS, SEXP maxSDS, SEXP deltaS, SEXP
 
 	}
 
+	if (globalVariance < eps1){
+		//Rprintf("Global Variance is zero!\n");
+		globalVariance = eps1;
+	}
 
 
 
 	i = 0;
-	while (i < n){
+	while (i < (n)){
+		//Rprintf("i: %lf\n", (double) i);
+
 		//if (i > minSeg && i < n-minSeg-1){
 		if (fabs(x[i]) > eps && i > minSeg && i < n-minSeg-1){
 			j = minSeg-1;
@@ -161,6 +151,8 @@ extern "C" SEXP segmentCyberT(SEXP xS, SEXP epsS, SEXP maxSDS, SEXP deltaS, SEXP
 			maxIdx=0;
 
 			while (d<=delta && j<=maxInt && (i+j+1) < n && (i-j-1)>=0){
+				//Rprintf("j: %lf\n", (double) j);
+
 				// bptLeft
 				nn = ((double) j)+cyberWeight;
 
@@ -171,9 +163,9 @@ extern "C" SEXP segmentCyberT(SEXP xS, SEXP epsS, SEXP maxSDS, SEXP deltaS, SEXP
 				}
 				varLeft=((partialSumSquares[i]-partialSumSquares[i-j-1])-(j+1)*meanLeft*meanLeft);
 				varLeft=(varLeft+cyberWeight*globalVariance)/(nn-1.0);
-				if (varLeft < minimumVariance){
-					varLeft = minimumVariance;
-				}
+				//if (varLeft < minimumVariance){
+				//	varLeft = minimumVariance;
+				//}
 
 				meanRight=(partialSumValues[i+j]-partialSumValues[i])/(j);
 				if (fabs(meanRight) <  globalMean + maxSD * sqrt(globalVariance)){
@@ -181,9 +173,9 @@ extern "C" SEXP segmentCyberT(SEXP xS, SEXP epsS, SEXP maxSDS, SEXP deltaS, SEXP
 				}
 				varRight=((partialSumSquares[i+j]-partialSumSquares[i])-(j)*meanRight*meanRight);
 				varRight=(varRight+cyberWeight*globalVariance)/(nn-2.0);
-				if (varRight < minimumVariance){
-					varRight= minimumVariance;
-				}
+				//if (varRight < minimumVariance){
+				//	varRight= minimumVariance;
+				//}
 				meanDiff=(meanLeft-meanRight);
 				newStatisticBptLeft=fabs(meanDiff)/sqrt(varLeft/(nn+1.0)+varRight/(nn)+eps1);
 
@@ -226,7 +218,7 @@ extern "C" SEXP segmentCyberT(SEXP xS, SEXP epsS, SEXP maxSDS, SEXP deltaS, SEXP
 				if (newPValue>maxPValue){
 					maxStatistic=newStatistic;
 					maxPValue=newPValue;
-					maxIdx=((double) j);
+					maxIdx=j;
 				}
 
 				/*Rprintf("MeanLeft: %lf\n", meanLeft);
@@ -247,23 +239,27 @@ extern "C" SEXP segmentCyberT(SEXP xS, SEXP epsS, SEXP maxSDS, SEXP deltaS, SEXP
 
 			//starts[i] = i;
 			pValue[i]=maxPValue;
-			leftBorders[i]=(i)- ((long) maxIdx)-1;
-			rightBorders[i]=(i)+((long) maxIdx)+1;
+			leftBorders[i]= (i) - (maxIdx)-1;
+			rightBorders[i]=(i) + (maxIdx)+1;
 
 			i=i+1;
 		} else{
 			//starts[i] = i;
 			pValue[i]=0; //actually log p value
 			//savedDOF[i]=i;
+			leftBorders[i]=-1;
+			rightBorders[i]=-1;
 
 			i=i+1;
+
 		}
 
 	}
 
+
 	// Determine local maxima
 	i=0;
-	while(i<n){
+	while(i<n-1){
 		savedStatistic[i]=pValue[i];
 		ll = ((int) floor(((double) minSeg)/ 2.0));
 		//ll = minSeg;
@@ -284,10 +280,18 @@ extern "C" SEXP segmentCyberT(SEXP xS, SEXP epsS, SEXP maxSDS, SEXP deltaS, SEXP
 		hist[i]=2;
 	}
 
+
+
 	for (i=0;i<n;i++){
-		hist[leftBorders[i]]++;
-		hist[rightBorders[i]]++;
+		Rprintf("LeftBorders: %lf\n", (double) leftBorders[i]);
+		Rprintf("RightBorders: %lf\n", (double) rightBorders[i]);
+		if (leftBorders[i] > -1){
+			hist[leftBorders[i]]++;
+			hist[rightBorders[i]]++;
+		}
 	}
+
+
 
 	for (i=0;i<n;i++){
 		//hist[i]=(savedStatistic[i]*log2(hist[i])/log2(10))/(log2(12)/log2(10));
