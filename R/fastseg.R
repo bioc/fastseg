@@ -56,8 +56,10 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
         }
     }
     
+	globalMedian <- median(x,na.rm=TRUE)
+	
 	if (any(is.na(x))) {
-		x[is.na(x)] <- median(x, na.rm=TRUE)
+		x[is.na(x)] <- globalMedian
 	}
 	
 	if (missing("eps")) {
@@ -71,7 +73,7 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 	} else if (type==2) {
 		res <- .Call("segmentCyberT", x, as.double(eps), as.integer(3), 
 				as.integer(delta), as.integer(maxInt), as.integer(minSeg), 
-				as.integer(squashing), as.double(cyberWeight), 0.15)
+				as.integer(squashing), as.double(cyberWeight))
 	}
 	
 	if (alpha >= 1) {
@@ -109,10 +111,10 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 		ir <- IRanges::IRanges(df$start, df$end)
 		ir <- ir[which(width(ir)>=minSeg)]
 		
-		#browser()
-		irAll <- IRanges(1, length(x))
-        
-		segsFinal <- as.data.frame(sort(c(ir, setdiff(irAll, ir))))
+		
+		irAll <- IRanges::IRanges(1, length(x))
+		segsFinal <- IRanges::as.data.frame(IRanges::sort(
+						c(ir, IRanges::setdiff(irAll, ir))))
 		
 		if (segPlot) plot(x, pch=15, cex=0.5, ...)
 		nbrOfSegs <- nrow(segsFinal)

@@ -85,11 +85,16 @@ extern "C" SEXP segment(SEXP xS, SEXP epsS, SEXP deltaS, SEXP maxIntS,
 		//Rprintf("PartialSumSquares: %lf\n", partialSumSquares[i]);
 
 		//hist[i]=2;
+		xx[i]=x[i];
+
 
 	}
 	globalVariance = M2/(n-1);
 
 	if (squashing > 0){
+		// Experimental - will be completely removed in the next version.
+
+		/*
 		//beta = -log(2.0/1.8-1)/((double) squashing * sqrt(globalVariance));
 		//Rprintf("Beta: %lf\n", beta);
 		beta = (double) squashing;
@@ -119,14 +124,12 @@ extern "C" SEXP segment(SEXP xS, SEXP epsS, SEXP deltaS, SEXP maxIntS,
 		}
 		globalVariance = M2/(n-1);
 		//Rprintf("Squashing values.\n");
-
-	} else{
-		// for (i=0;i<n;i++){
-		//	xx[i]=x[i];
-		//}
-		//Rprintf("Using original values.\n");
-
+		*/
 	}
+
+	//Rprintf("Using original values.\n");
+
+
 
 	if (globalVariance < eps1){
 		//Rprintf("Global Variance is zero!\n");
@@ -150,15 +153,22 @@ extern "C" SEXP segment(SEXP xS, SEXP epsS, SEXP deltaS, SEXP maxIntS,
 			while (d<=delta && j<=maxInt && (i+j+1) < n && (i-j-1)>=0){
 				nn = ((double) j)+cyberWeight-1.0;
 
-				meanLeft=(partialSumValues[i]-partialSumValues[i-j-1])/(j);
-				varLeft=((partialSumSquares[i]-partialSumSquares[i-j-1])-(j)*meanLeft*meanLeft);
-				varLeft=(varLeft+cyberWeight*globalVariance)/(nn);
+				meanLeft=(partialSumValues[i]-partialSumValues[i-j-1])/(j+1);
+				varLeft=((partialSumSquares[i]-partialSumSquares[i-j-1])-(j+1)*meanLeft*meanLeft);
+				varLeft=((varLeft)+cyberWeight*globalVariance)/(nn);
+
+				//Rprintf("PartialSumSquaresLeft: %lf\n", (partialSumSquares[i]-partialSumSquares[i-j-1]));
+				//Rprintf("MeanLeft: %lf\n", meanLeft);
+				//Rprintf("VarLeft: %lf\n", varLeft);
 
 
-				meanRight=(partialSumValues[i+j+1]-partialSumValues[i])/(j);
-				varRight=((partialSumSquares[i+j+1]-partialSumSquares[i])-(j)*meanRight*meanRight);
-				varRight=(varRight+cyberWeight*globalVariance)/(nn);
+				meanRight=(partialSumValues[i+j+1]-partialSumValues[i])/(j+1);
+				varRight=((partialSumSquares[i+j+1]-partialSumSquares[i])-(j+1)*meanRight*meanRight);
+				varRight=((varRight)+cyberWeight*globalVariance)/(nn);
 
+				//Rprintf("PartialSumSquaresRight: %lf\n", (partialSumSquares[i+j+1]-partialSumSquares[i]));
+				//Rprintf("MeanRight: %lf\n", meanRight);
+				//Rprintf("VarRight: %lf\n", varRight);
 
 				meanDiff=(meanLeft-meanRight);
 				newStatistic=fabs(meanDiff)/sqrt(varLeft/(nn+1.0)+varRight/(nn+1.0)+eps1);
@@ -219,11 +229,7 @@ extern "C" SEXP segment(SEXP xS, SEXP epsS, SEXP deltaS, SEXP maxIntS,
 					maxIdx=((double) j);
 				}
 
-				/*Rprintf("MeanLeft: %lf\n", meanLeft);
-				Rprintf("VarLeft: %lf\n", varLeft);
-				Rprintf("MeanRight: %lf\n", meanRight);
-				Rprintf("VarRight: %lf\n", varRight);
-				 */
+			
 				//Rprintf("NewStatistic: %lf\n", newStatistic);
 
 				if (newPValue>oldPValue){
@@ -286,14 +292,14 @@ extern "C" SEXP segment(SEXP xS, SEXP epsS, SEXP deltaS, SEXP maxIntS,
 	SET_STRING_ELT(namesRET, 0, mkChar("x"));
 	SET_STRING_ELT(namesRET, 1, mkChar("stat"));
 	//SET_STRING_ELT(namesRET, 2, mkChar("stat2"));
-	SET_STRING_ELT(namesRET, 3, mkChar("leftright"));
+	SET_STRING_ELT(namesRET, 2, mkChar("leftright"));
 
 	SEXP RET;
 	PROTECT(RET = allocVector(VECSXP, 3));
 	SET_VECTOR_ELT(RET, 0, x_RET);
 	SET_VECTOR_ELT(RET, 1, savedStatistic_RET);
 	//SET_VECTOR_ELT(RET, 2, hist_RET);
-	SET_VECTOR_ELT(RET, 3, leftright_RET);
+	SET_VECTOR_ELT(RET, 2, leftright_RET);
 	setAttrib(RET, R_NamesSymbol, namesRET);
 	UNPROTECT(5);
 	return(RET);

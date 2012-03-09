@@ -9,7 +9,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(segment, 7),
 
 /* segmentCyberT.cpp */
-	CALLMETHOD_DEF(segmentCyberT, 9),
+	CALLMETHOD_DEF(segmentCyberT, 8),
 
 	{NULL, NULL, 0}
 };

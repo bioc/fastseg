@@ -84,12 +84,14 @@ extern "C" SEXP segmentCyberT(SEXP xS, SEXP epsS, SEXP maxSDS, SEXP deltaS, SEXP
 		}
 		//Rprintf("PartialSumValues: %lf\n", partialSumValues[i]);
 		//Rprintf("PartialSumSquares: %lf\n", partialSumSquares[i]);
+		xx[i]=x[i];
 
 	}
 	globalVariance = M2/(n-1);
 	//minimumVariance= 0;
 
 	if (squashing > 0){
+		/* Experimental - will be completely removed in the next version.
 		beta = -log(2.0/1.8-1)/((double) squashing * sqrt(globalVariance));
 		//Rprintf("Beta: %lf\n", beta);
 
@@ -119,13 +121,7 @@ extern "C" SEXP segmentCyberT(SEXP xS, SEXP epsS, SEXP maxSDS, SEXP deltaS, SEXP
 		globalVariance = M2/(n-1);
 		//minimumVariance= 0;
 		Rprintf("Squashing values.\n");
-
-	} else{
-		for (i=0;i<n;i++){
-			xx[i]=x[i];
-		}
-		//Rprintf("Using original values.\n");
-
+		*/
 	}
 
 	if (globalVariance < eps1){
@@ -283,8 +279,8 @@ extern "C" SEXP segmentCyberT(SEXP xS, SEXP epsS, SEXP maxSDS, SEXP deltaS, SEXP
 
 
 	for (i=0;i<n;i++){
-		Rprintf("LeftBorders: %lf\n", (double) leftBorders[i]);
-		Rprintf("RightBorders: %lf\n", (double) rightBorders[i]);
+		//Rprintf("LeftBorders: %lf\n", (double) leftBorders[i]);
+		//Rprintf("RightBorders: %lf\n", (double) rightBorders[i]);
 		if (leftBorders[i] > -1){
 			hist[leftBorders[i]]++;
 			hist[rightBorders[i]]++;
