@@ -59,7 +59,7 @@ extern "C" SEXP segmentCyberT(SEXP xS, SEXP epsS, SEXP maxSDS, SEXP deltaS, SEXP
 	double globalMean,globalSd,diff,M2,globalVariance;
 	double oldStatistic,meanLeft,meanRight,varLeft,varRight;
 	double newStatistic,meanDiff,maxStatistic,DOF,a,b,eps1;
-	double newPValue, maxPValue,oldPValue,minimumVariance;
+	double newPValue, maxPValue,oldPValue;
 	double newStatisticBptLeft,newStatisticBptRight,beta,nn;
 
 
@@ -182,9 +182,6 @@ extern "C" SEXP segmentCyberT(SEXP xS, SEXP epsS, SEXP maxSDS, SEXP deltaS, SEXP
 				}
 				varLeft=((partialSumSquares[i-1]-partialSumSquares[i-j-1])-(j)*meanLeft*meanLeft);
 				varLeft=(varLeft+cyberWeight*globalVariance)/(nn-2.0);
-				if (varLeft < minimumVariance){
-					varLeft = minimumVariance;
-				}
 
 				meanRight=(partialSumValues[i+j]-partialSumValues[i-1])/(j+1);
 				if (fabs(meanRight) <  globalMean + maxSD * sqrt(globalVariance)){
@@ -192,9 +189,7 @@ extern "C" SEXP segmentCyberT(SEXP xS, SEXP epsS, SEXP maxSDS, SEXP deltaS, SEXP
 				}
 				varRight=((partialSumSquares[i+j]-partialSumSquares[i-1])-(j+1)*meanRight*meanRight);
 				varRight=(varRight+cyberWeight*globalVariance)/(nn-1.0);
-				if (varRight < minimumVariance){
-					varRight= minimumVariance;
-				}
+
 				meanDiff=(meanLeft-meanRight);
 				newStatisticBptRight=fabs(meanDiff)/sqrt(varLeft/nn+varRight/(nn+1)+eps1);
 
