@@ -85,30 +85,6 @@
 #'         sampleNames = colnames(data2))
 #' 
 #' 
-#' ###########################################################
-#' ## Expression set object
-#' ###########################################################
-#' library(oligo)
-#' eSet <- new("ExpressionSet")
-#' assayData(eSet) <- list(intensity=data)
-#' 
-#' featureData(eSet) <- new("AnnotatedDataFrame", 
-#'         data=data.frame(
-#'                 chrom = chrom,
-#'                 start = maploc, 
-#'                 end   = maploc))
-#' phenoData(eSet) <- new("AnnotatedDataFrame", 
-#'         data=data.frame(samples=samplenames))
-#' sampleNames(eSet) <- samplenames
-#' res <- fastseg(eSet)
-#' 
-#' segres <- toDNAcopyObj(
-#'         segData     = res, 
-#'         chrom       = rep(1, nrow(data)), 
-#'         maploc      = maploc, 
-#'         genomdat    = as.matrix(data), 
-#'         sampleNames = colnames(data))
-#' 
 #' 
 #' #####################################################################
 #' ### plot the segments

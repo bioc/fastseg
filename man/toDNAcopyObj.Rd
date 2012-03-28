@@ -3,7 +3,7 @@
 \title{Function to create a DNAcopy object for plot functions.}
 \usage{
   toDNAcopyObj(segData, chrom, maploc, genomdat,
-  sampleNames)
+    sampleNames)
 }
 \arguments{
   \item{segData}{The results of the segmentation.}
@@ -49,17 +49,17 @@ library("GenomicRanges")
 
 ## with both individuals
 gr <- GRanges(seqnames=chrom,
-ranges=IRanges(maploc, end=maploc))
+        ranges=IRanges(maploc, end=maploc))
 elementMetadata(gr) <- data
 colnames(elementMetadata(gr)) <- samplenames
 res <- fastseg(gr)
 
 segres <- toDNAcopyObj(
-segData     = res,
-chrom       = as.character(seqnames(gr)),
-maploc      = as.numeric(start(gr)),
-genomdat    = data,
-sampleNames = samplenames)
+        segData     = res,
+        chrom       = as.character(seqnames(gr)),
+        maploc      = as.numeric(start(gr)),
+        genomdat    = data,
+        sampleNames = samplenames)
 
 ## with one individual
 gr2 <- gr
@@ -69,11 +69,11 @@ elementMetadata(gr2) <- data2
 res <- fastseg(gr2)
 
 segres <- toDNAcopyObj(
-segData     = res,
-chrom       = as.character(seqnames(gr)),
-maploc      = as.numeric(start(gr)),
-genomdat    = as.matrix(data2),
-sampleNames = unique(elementMetadata(res)$ID))
+        segData     = res,
+        chrom       = as.character(seqnames(gr)),
+        maploc      = as.numeric(start(gr)),
+        genomdat    = as.matrix(data2),
+        sampleNames = unique(elementMetadata(res)$ID))
 
 
 ###########################################################
@@ -82,11 +82,11 @@ sampleNames = unique(elementMetadata(res)$ID))
 data2 <- data[, 1]
 res <- fastseg(data2)
 segres <- toDNAcopyObj(
-segData     = res,
-chrom       = rep(1, length(data2)),
-maploc      = 1:length(data2),
-genomdat    = as.matrix(data2),
-sampleNames = "sample1")
+        segData     = res,
+        chrom       = rep(1, length(data2)),
+        maploc      = 1:length(data2),
+        genomdat    = as.matrix(data2),
+        sampleNames = "sample1")
 
 
 ###########################################################
@@ -95,36 +95,12 @@ sampleNames = "sample1")
 data2 <- data[1:400, ]
 res <- fastseg(data2)
 segres <- toDNAcopyObj(
-segData     = res,
-chrom       = rep(1, nrow(data2)),
-maploc      = 1:nrow(data2),
-genomdat    = as.matrix(data2),
-sampleNames = colnames(data2))
+        segData     = res,
+        chrom       = rep(1, nrow(data2)),
+        maploc      = 1:nrow(data2),
+        genomdat    = as.matrix(data2),
+        sampleNames = colnames(data2))
 
-
-###########################################################
-## Expression set object
-###########################################################
-library(oligo)
-eSet <- new("ExpressionSet")
-assayData(eSet) <- list(intensity=data)
-
-featureData(eSet) <- new("AnnotatedDataFrame",
-data=data.frame(
-chrom = chrom,
-start = maploc,
-end   = maploc))
-phenoData(eSet) <- new("AnnotatedDataFrame",
-data=data.frame(samples=samplenames))
-sampleNames(eSet) <- samplenames
-res <- fastseg(eSet)
-
-segres <- toDNAcopyObj(
-segData     = res,
-chrom       = rep(1, nrow(data)),
-maploc      = maploc,
-genomdat    = as.matrix(data),
-sampleNames = colnames(data))
 
 
 #####################################################################

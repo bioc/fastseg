@@ -88,7 +88,7 @@ copy number segments. Further it can segment data stemming from RNA microarrays
 like tiling arrays to identify transcripts. Most generally, 
 it can segment data given as a matrix or as a vector.
 Various data formats can be used as input to \fastseg\ like  
-expression set objects for microarrays or GRanges for sequencing data.
+data matrices, vectors or GRanges for sequencing data.
 
 The  segmentation criterion of \fastseg\ is based on a statistical test 
 in a Bayesian framework, namely the cyber t-test \citep{Baldi:01}.
@@ -137,8 +137,26 @@ segmentation results the a DNAcopy object which will be quite helpful for plot
 functions. 
 
 \subsection{File formats}
-The package can handle different file formats: GRanges, ExpressionSet objects,
+The package can handle different file formats: GRanges, 
 matrix or a vector. 
+
+\subsubsection{Vector}
+<<echo=TRUE>>=
+data2 <- data[, 1]
+res <- fastseg(data2)
+head(res)
+
+
+@
+
+\subsubsection{Matrix}
+<<echo=TRUE>>=
+data2 <- data[1:400, ]
+res <- fastseg(data2)
+head(res)
+@
+
+
 
 \subsubsection{GRanges objects}
 <<echo=TRUE>>=
@@ -164,39 +182,7 @@ head(res)
 
 @
 
-\subsubsection{ExpressionSet objects}
-<<echo=TRUE>>=
-library(oligo)
-eSet <- new("ExpressionSet")
-assayData(eSet) <- list(intensity=data)
 
-featureData(eSet) <- new("AnnotatedDataFrame", 
-        data=data.frame(
-                chrom = paste("chr",chrom,sep=""),
-                start = maploc, 
-                end   = maploc,stringsAsFactors=FALSE))
-phenoData(eSet) <- new("AnnotatedDataFrame", 
-        data=data.frame(samples=samplenames))
-sampleNames(eSet) <- samplenames
-res <- fastseg(eSet)
-head(res)
-@
-
-\subsubsection{Vector}
-<<echo=TRUE>>=
-data2 <- data[, 1]
-res <- fastseg(data2)
-head(res)
-
-
-@
-
-\subsubsection{Matrix}
-<<echo=TRUE>>=
-data2 <- data[1:400, ]
-res <- fastseg(data2)
-head(res)
-@
 
 \subsection{Plotting the segmentation results}
 

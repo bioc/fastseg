@@ -94,19 +94,8 @@ segPlot <- function(x,res,
 		#chrom <- rep(unique(chrom),length(x))
 		maploc <- (  start(ranges(x)) + end(ranges(x))  )/2
 		xmaploc=TRUE
-	} else if(inherits(x,"ExpressionSet")){
-		
-		#browser()
-		
-		xdat <- assayData(x)$intensity
-		nsample <- ncol(xdat)
-		chrom <- featureData(x)@data$chr
-		
-		#chrom <- rep(unique(chrom),length(x))
-		maploc <- (  featureData(x)@data$start + featureData(x)@data$end )/2
-		xmaploc=TRUE
 	}else{
-		stop("x must be of type GRanges, eset, vector or matrix!")
+		stop("x must be of type GRanges, vector or matrix!")
 		
 	}	
 	

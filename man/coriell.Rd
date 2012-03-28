@@ -5,9 +5,6 @@
 \format{A data frame containing five variables: first is clone name,
 second is clone chromosome, third is clone position, fourth and fifth are
 log2ratio for two cell lines.}
-\usage{
-  data(coriell)
-}
 \description{
   These are two data array CGH studies sets of Corriel cell
   lines taken from the reference below.
@@ -19,4 +16,5 @@ log2ratio for two cell lines.}
   measurement of DNA copy number, Nature Genetics, 2001
 }
 \keyword{data}
+\keyword{datasets}
 

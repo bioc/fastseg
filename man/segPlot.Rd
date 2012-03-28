@@ -52,8 +52,8 @@ numbers.}
   log-ratio values (Default = 3).}
 
   \item{pt.cols}{the color list for the points. The colors
-  alternate between chromosomes. If missing the point
-  colors are black and green.}
+  alternate between chromosomes. (Default =
+  c("green","black").}
 
   \item{segcol}{the color of the lines indicating the
   segment means. (Default = "red").}

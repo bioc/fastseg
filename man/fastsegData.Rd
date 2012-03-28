@@ -3,9 +3,6 @@
 \alias{fastsegData}
 \title{Example data set for fastseg}
 \format{A simple vector with a copy number call as produced by the cn.farms algorithm.}
-\usage{
-  data(fastsegData)
-}
 \description{
   The data is a small subset of copy number calls which
   were produced by the cn.farms algorithm from an
@@ -18,4 +15,5 @@
   low false discovery rate, NAR, 2011
 }
 \keyword{data}
+\keyword{datasets}
 

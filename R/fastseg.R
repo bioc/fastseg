@@ -39,13 +39,17 @@
 #' x <- rnorm(n=500,sd=0.5)
 #' x[150:200] <- rnorm(n=51,mean=3,sd=0.5)
 #' fastseg(x)
+#' @importFrom IRanges sort
+#' @importFrom IRanges as.data.frame
+#' @importFrom BiocGenerics setdiff
 #' @return A data frame containing the segments.
 #' @author Guenter Klambauer \email{klambauer@@bioinf.jku.at}
 #' @noRd
 segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4, 
 		eps=0, delta = 5, maxInt = 10, squashing = 0, cyberWeight = 10, 
         segPlot = TRUE, ...) {
-    
+	
+	
     if (missing("segMedianT")) {
         segMedianT <- c()
         segMedianT[1] <- median(x, na.rm=TRUE)+1.5*sd(x, na.rm=TRUE)
@@ -105,6 +109,7 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 	
 	df <- data.frame("start"=start, "end"=end, "mean"=m, "median"=med)
 	
+		
 	if (all(segMedianT==0)) {
 		
 		#message("No merging of segments.")
@@ -114,7 +119,7 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 		
 		irAll <- IRanges::IRanges(1, length(x))
 		segsFinal <- IRanges::as.data.frame(IRanges::sort(
-						c(ir, IRanges::setdiff(irAll, ir))))
+						c(ir, BiocGenerics::setdiff(irAll, ir))))
 		
 		if (segPlot) plot(x, pch=15, cex=0.5, ...)
 		nbrOfSegs <- nrow(segsFinal)
@@ -164,7 +169,7 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 #            importFrom(BiocGenerics,setdiff)
         ##############################################
 
-		segsFinal <- as.data.frame(sort(c(ir, setdiff(irAll, ir))))
+		segsFinal <- as.data.frame(sort(c(ir, BiocGenerics::setdiff(irAll, ir))))
 		
 		if (segPlot) plot(x, pch=15, cex=0.5, ...)
 		nbrOfSegs <- nrow(segsFinal)
@@ -280,89 +285,14 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 #' ###########################################################
 #' data2 <- data[1:400, ]
 #' res <- fastseg(data2)
-#' 
-#' 
-#' ###########################################################
-#' ## Expression set object
-#' ###########################################################
-#' library(oligo)
-#' eSet <- new("ExpressionSet")
-#' assayData(eSet) <- list(intensity=data)
-#' 
-#' featureData(eSet) <- new("AnnotatedDataFrame", 
-#'         data=data.frame(
-#'                 chrom = chrom,
-#'                 start = maploc, 
-#'                 end   = maploc))
-#' phenoData(eSet) <- new("AnnotatedDataFrame", 
-#'         data=data.frame(samples=samplenames))
-#' sampleNames(eSet) <- samplenames
-#' res <- fastseg(eSet)
-#' 
+
 
 fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4, 
         eps = 0, delta = 5, maxInt = 40, squashing = 0, cyberWeight = 10, ...) {
-    
     if (inherits(x, "ExpressionSet")) {
-        
-        if (!("intensity" %in% names(assayData(x)))) {
-            stop("ExpressionSet needs to have an assayData slot named intensity!")
-        } 
-        if(!all(colnames(fData(x))[1:3] == c("chrom", "start", "end"))) {
-            stop("The first 3 colnames of featureData need to be names: chrom, start, end")
-        }
-        if(length(sampleNames(x)) != ncol(assayData(x)$intensity)) {
-            stop("sampleNames must be assigned and have a correct dimension!")
-        }
-        
-        y <- split(x, featureData(x)$chrom)
-        nbrOfSeq <- length(y)
-        
-        res02 <- list()
-        for (seq in seq_len(nbrOfSeq)) {
-            x <- y[[seq]]
-            
-            res <- list()
-            for (sampleIdx in seq_len(ncol(assayData(x)$intensity))) {
-                z01 <- assayData(x)$intensity[, sampleIdx]
-                sample <- sampleNames(x)[sampleIdx]
-                
-                resTmp <- segmentGeneral(z01, type, alpha, segMedianT, minSeg, 
-                        eps, delta, maxInt, squashing, cyberWeight, 
-                        segPlot = FALSE, ...)$finalSegments
-                resTmp$sample <- sample
-                res[[sampleIdx]] <- resTmp
-            }
-            res <- do.call("rbind", res)
-            res$num.mark <- res$end - res$start
-            
-            chrom <- rep(featureData(x)$chrom[1], nrow(res))
-            start <- featureData(x)$start[res$start]
-            end <- featureData(x)$end[res$end]
-            
-            resX <- data.frame(
-                    ID = res$sample, 
-                    chrom = chrom, 
-                    loc.start = start, 
-                    loc.end = end, 
-                    num.mark = res$num.mark, 
-                    seg.mean = res$mean, 
-                    startRow = res$start, 
-                    endRow = res$end,stringsAsFactors=FALSE)
-            
-            res02[[seq]] <- resX
-            
-        }
-        res03 <- do.call("rbind", res02)
-        
-        finalRes <- GRanges(seqnames = Rle(res03$chrom),
-                ranges   = IRanges(start = res03$loc.start, end = res03$loc.end),
-                ID = res03$ID, 
-                num.mark  = res03$num.mark,
-                seg.mean  = res03$seg.mean,
-                startRow  = res03$startRow,
-                endRow    = res03$endRow)
-        
+	
+		stop("ExpressionSets are not supported anymore!")
+		
     } else if (inherits(x, "GRanges")) {
 #        if (!all(lapply(IRanges::elementMetadata(x), mode) == "numeric")) {
 #            stop("All elementMetadata of GRanges object needs to be numeric!")
@@ -442,7 +372,8 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
                 endRow    = res02$end)
         
     } else if (is.vector(x)) {
-        
+		
+		
         res02 <- segmentGeneral(x, type, alpha, segMedianT, minSeg, 
                 eps, delta, maxInt, squashing, cyberWeight, 
                 segPlot = FALSE, ...)$finalSegments
@@ -457,7 +388,7 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
         
     } else {
         
-        stop("GRanges object, ExpressionSet object, vector or matrix as input expected!")    
+        stop("GRanges object, vector or matrix as input expected!")    
         
     }
     
