@@ -48,6 +48,13 @@
 segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4, 
 		eps=0, delta = 5, maxInt = 10, squashing = 0, cyberWeight = 10, 
         segPlot = TRUE, ...) {
+	if (any(!is.finite(x))){
+		message("Detected infinite values in the data. Replacing with max/min!")
+		y <- x[which(is.finite(x) & !is.na(x))]
+		x[which(x==Inf)] <- max(y)
+		x[which(x==-Inf)] <- min(y)
+		
+	}
 	
 	
     if (missing("segMedianT")) {
@@ -71,11 +78,11 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 	}
 	
 	if (type==1) {
-		res <-  .Call("segment", x, as.double(eps), as.integer(delta), 
+		res <-  .Call("segment", as.numeric(x), as.double(eps), as.integer(delta), 
 				as.integer(maxInt), as.integer(minSeg),
 				as.integer(squashing), as.double(cyberWeight))
 	} else if (type==2) {
-		res <- .Call("segmentCyberT", x, as.double(eps), as.integer(3), 
+		res <- .Call("segmentCyberT", as.numeric(x), as.double(eps), as.integer(3), 
 				as.integer(delta), as.integer(maxInt), as.integer(minSeg), 
 				as.integer(squashing), as.double(cyberWeight))
 	}
@@ -289,7 +296,7 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 
 fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4, 
         eps = 0, delta = 5, maxInt = 40, squashing = 0, cyberWeight = 10, ...) {
-    if (inherits(x, "ExpressionSet")) {
+	if (inherits(x, "ExpressionSet")) {
 	
 		
 		if (!("intensity" %in% names(assayData(x)))) {
@@ -407,6 +414,9 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
         
     } else if (is.matrix(x)) {
         nbrOfSamples <- ncol(x)
+		if (is.null(colnames(x))){
+			colnames(x) <- paste("Sample",1:ncol(x),sep="_")
+		}
         samples <- colnames(x)
         
         segsTmp <- list()
