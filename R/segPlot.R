@@ -76,6 +76,9 @@ segPlot <- function(x,res,
 		maploc <- 1:length(x)
 		xmaploc=FALSE 
 	} else if (is.matrix(x)){
+		if (is.null(colnames(x))){
+			colnames(x) <- paste("Sample",1:ncol(x),sep="_")
+		}
 		xdat <- x
 		nsample <- ncol(x)
 		chrom <- as.character(seqnames(res))
@@ -100,7 +103,7 @@ segPlot <- function(x,res,
 	}	
 	
 	if(missing(ylim)) {
-		uylim <- max(abs(xdat), na.rm=TRUE)
+		uylim <- max(abs(xdat[which(is.finite(xdat))]), na.rm=TRUE)
 		ylim <- c(-uylim, uylim)
 	}
 	

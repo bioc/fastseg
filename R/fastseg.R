@@ -48,6 +48,13 @@
 segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4, 
 		eps=0, delta = 5, maxInt = 10, squashing = 0, cyberWeight = 10, 
         segPlot = TRUE, ...) {
+	if (any(!is.finite(x))){
+		message("Detected infinite values in the data. Replacing with max/min!")
+		y <- x[which(is.finite(x) & !is.na(x))]
+		x[which(x==Inf)] <- max(y)
+		x[which(x==-Inf)] <- min(y)
+		
+	}
 	
 	
     if (missing("segMedianT")) {
@@ -71,11 +78,11 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 	}
 	
 	if (type==1) {
-		res <-  .Call("segment", x, as.double(eps), as.integer(delta), 
+		res <-  .Call("segment", as.numeric(x), as.double(eps), as.integer(delta), 
 				as.integer(maxInt), as.integer(minSeg),
 				as.integer(squashing), as.double(cyberWeight))
 	} else if (type==2) {
-		res <- .Call("segmentCyberT", x, as.double(eps), as.integer(3), 
+		res <- .Call("segmentCyberT", as.numeric(x), as.double(eps), as.integer(3), 
 				as.integer(delta), as.integer(maxInt), as.integer(minSeg), 
 				as.integer(squashing), as.double(cyberWeight))
 	}
@@ -289,10 +296,66 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 
 fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4, 
         eps = 0, delta = 5, maxInt = 40, squashing = 0, cyberWeight = 10, ...) {
-    if (inherits(x, "ExpressionSet")) {
+	if (inherits(x, "ExpressionSet")) {
 	
-		stop("ExpressionSets are not supported anymore!")
 		
+		if (!("intensity" %in% names(assayData(x)))) {
+			stop("ExpressionSet needs to have an assayData slot named intensity!")
+		} 
+		if(!all(colnames(fData(x))[1:3] == c("chrom", "start", "end"))) {
+			stop("The first 3 colnames of featureData need to be names: chrom, start, end")
+		}
+		if(length(sampleNames(x)) != ncol(assayData(x)$intensity)) {
+			stop("sampleNames must be assigned and have a correct dimension!")
+		}
+		
+		y <- split(x, featureData(x)$chrom)
+		nbrOfSeq <- length(y)
+		
+		res02 <- list()
+		for (seq in seq_len(nbrOfSeq)) {
+			x <- y[[seq]]
+			
+			res <- list()
+			for (sampleIdx in seq_len(ncol(assayData(x)$intensity))) {
+				z01 <- assayData(x)$intensity[, sampleIdx]
+				sample <- sampleNames(x)[sampleIdx]
+				
+				resTmp <- segmentGeneral(z01, type, alpha, segMedianT, minSeg, 
+						eps, delta, maxInt, squashing, cyberWeight, 
+						segPlot = FALSE, ...)$finalSegments
+				resTmp$sample <- sample
+				res[[sampleIdx]] <- resTmp
+			}
+			res <- do.call("rbind", res)
+			res$num.mark <- res$end - res$start
+			
+			chrom <- rep(featureData(x)$chrom[1], nrow(res))
+			start <- featureData(x)$start[res$start]
+			end <- featureData(x)$end[res$end]
+			
+			resX <- data.frame(
+					ID = res$sample, 
+					chrom = chrom, 
+					loc.start = start, 
+					loc.end = end, 
+					num.mark = res$num.mark, 
+					seg.mean = res$mean, 
+					startRow = res$start, 
+					endRow = res$end,stringsAsFactors=FALSE)
+			
+			res02[[seq]] <- resX
+			
+		}
+		res03 <- do.call("rbind", res02)
+		
+		finalRes <- GRanges(seqnames = Rle(res03$chrom),
+				ranges   = IRanges(start = res03$loc.start, end = res03$loc.end),
+				ID = res03$ID, 
+				num.mark  = res03$num.mark,
+				seg.mean  = res03$seg.mean,
+				startRow  = res03$startRow,
+				endRow    = res03$endRow)
     } else if (inherits(x, "GRanges")) {
 #        if (!all(lapply(IRanges::elementMetadata(x), mode) == "numeric")) {
 #            stop("All elementMetadata of GRanges object needs to be numeric!")
@@ -351,6 +414,9 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
         
     } else if (is.matrix(x)) {
         nbrOfSamples <- ncol(x)
+		if (is.null(colnames(x))){
+			colnames(x) <- paste("Sample",1:ncol(x),sep="_")
+		}
         samples <- colnames(x)
         
         segsTmp <- list()
