@@ -5,7 +5,7 @@ on the cyber t-test.}
 \usage{
   fastseg(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
     eps = 0, delta = 5, maxInt = 40, squashing = 0,
-    cyberWeight = 10, ...)
+    cyberWeight = 10)
 }
 \arguments{
   \item{x}{Values to be segmented either in the format of a
@@ -21,7 +21,7 @@ on the cyber t-test.}
   the ratio of initial breakpoints. An integer greater than
   one is interpreted as number of desired breakpoints.
   Increasing this parameter leads to more segments.
-  (Default = 0.05)}
+  (Default = 0.1)}
 
   \item{segMedianT}{A numeric vector of length two with the
   thresholds of segments' median values that are considered
@@ -37,8 +37,7 @@ on the cyber t-test.}
   are tested. This makes the segmentation algorithm even
   faster. If all values should be tested "eps" can be set
   to zero. If missing the algorithm will try to find a
-  reasonable value by using quantiles. (Default
-  "missing".)}
+  reasonable value by using quantiles. (Default = 0.)}
 
   \item{delta}{Segment extension parameter. If delta
   consecutive extensions of the left and the right segment
@@ -81,6 +80,27 @@ data <- as.matrix(coriell[4:5])
 data[is.na(data)] <- median(data, na.rm=TRUE)
 chrom <- coriell$Chromosome
 maploc <- coriell$Position
+
+
+###########################################################
+## GRanges
+###########################################################
+
+library("GenomicRanges")
+
+## with both individuals
+gr <- GRanges(seqnames=chrom,
+        ranges=IRanges(maploc, end=maploc))
+elementMetadata(gr) <- data
+colnames(elementMetadata(gr)) <- samplenames
+res <- fastseg(gr)
+
+## with one individual
+gr2 <- gr
+data2 <- as.matrix(data[, 1])
+colnames(data2) <- "sample1"
+elementMetadata(gr2) <- data2
+res <- fastseg(gr2)
 
 
 ###########################################################

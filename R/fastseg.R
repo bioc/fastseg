@@ -26,15 +26,12 @@
 #' of the left and the right segment do not lead to a better p-value the testing
 #' is stopped. (Default = 5).
 #' @param maxInt Maximal length of the left and the right segment. (Default =
-#' 40).
+#' 10).
 #' @param squashing  The degree of squashing of the input values. If set to zero 
 #' no squashing is performed. (Default = 0).
 #' @param cyberWeight The nu parameter of the cyber t-test. Can be interpreted
 #' as the weight of the global variance. The higher the value the more small 
 #' segments with high variance will be significant. (Default = 10).
-#' @param segPlot Whether a standardized plot of the result should be plotted.
-#' Set to FALSE if plotting to file is desired. (Default = TRUE).  
-#' @param ... Further arguments passed to the plot function.
 #' @examples 
 #' x <- rnorm(n=500,sd=0.5)
 #' x[150:200] <- rnorm(n=51,mean=3,sd=0.5)
@@ -45,33 +42,45 @@
 #' @return A data frame containing the segments.
 #' @author Guenter Klambauer \email{klambauer@@bioinf.jku.at}
 #' @noRd
-segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4, 
-		eps=0, delta = 5, maxInt = 10, squashing = 0, cyberWeight = 10, 
-        segPlot = TRUE, ...) {
+segmentGeneral <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4, 
+		eps=0, delta = 5, maxInt = 10, squashing = 0, cyberWeight = 10) {
 	if (any(!is.finite(x))){
 		message("Detected infinite values in the data. Replacing with max/min!")
 		y <- x[which(is.finite(x) & !is.na(x))]
-		x[which(x==Inf)] <- max(y)
-		x[which(x==-Inf)] <- min(y)
+		x[which(x==Inf)] <- max(y,na.rm=TRUE)
+		x[which(x==-Inf)] <- min(y,na.rm=TRUE)
 		
-	}
+	}   
 	
-	
-    if (missing("segMedianT")) {
-        segMedianT <- c()
-        segMedianT[1] <- median(x, na.rm=TRUE)+1.5*sd(x, na.rm=TRUE)
-        segMedianT[2] <- median(x, na.rm=TRUE)-1.5*sd(x, na.rm=TRUE)
-    } else {
-        if (length(segMedianT)==1){
-            segMedianT <- c(abs(segMedianT), -abs(segMedianT))
-        }
-    }
-    
 	globalMedian <- median(x,na.rm=TRUE)
-	
 	if (any(is.na(x))) {
 		x[is.na(x)] <- globalMedian
 	}
+	
+	if (missing("segMedianT")) {
+		segMedianT <- c()
+		segMedianT[1] <- median(x, na.rm=TRUE)+1.5*sd(x, na.rm=TRUE)
+		segMedianT[2] <- median(x, na.rm=TRUE)-1.5*sd(x, na.rm=TRUE)
+	} else {
+		if (length(segMedianT)==1){
+			segMedianT <- c(abs(segMedianT), -abs(segMedianT))
+		}
+	}
+	
+	if (!(type==1 | type==2)) stop("\"type\" must be 1 or 2!")
+	if (!is.numeric(alpha)) stop("\"alpha\" must be numeric!")
+	if (!is.numeric(minSeg)) stop("\"minSeg\" must be numeric!")
+	if (!is.numeric(maxInt)) stop("\"maxInt\" must be numeric!")
+	if (!is.numeric(delta)) stop("\"minSeg\" must be numeric!")
+	if (!is.numeric(cyberWeight)) stop("\"cyberWeight\" must be numeric!")
+	
+	if (minSeg < 2) minSeg <- 2
+	if (maxInt < (minSeg+5)) maxInt <- minSeg+5
+	if (cyberWeight < 0) cyberWeight <- 0
+	
+	
+	
+
 	
 	if (missing("eps")) {
 		eps <- quantile(abs(diff(x)), probs=0.75)
@@ -97,7 +106,7 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 		stop(paste("Alpha must be either between 0 and 1 or an integer",
 						"greater than 1."))
 	}
-    
+	
 	brkptsInit <- unique(c(0, brkptsInit, length(x)))
 	nbrOfBrkpts <- length(brkptsInit)-1
 	
@@ -105,7 +114,7 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 	m <- vector(length=nbrOfBrkpts)
 	start <- vector(length=nbrOfBrkpts)
 	end <- vector(length=nbrOfBrkpts)
-    
+	
 	for (i in seq_len(nbrOfBrkpts)){
 		y <- x[(brkptsInit[i]+1):brkptsInit[i+1]]
 		m[i] <- mean(y)
@@ -113,10 +122,10 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 		start[i] <- brkptsInit[i]+1
 		end[i] <- brkptsInit[i+1]
 	}
-	
+
 	df <- data.frame("start"=start, "end"=end, "mean"=m, "median"=med)
 	
-		
+	
 	if (all(segMedianT==0)) {
 		
 		#message("No merging of segments.")
@@ -128,7 +137,6 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 		segsFinal <- IRanges::as.data.frame(IRanges::sort(
 						c(ir, BiocGenerics::setdiff(irAll, ir))))
 		
-		if (segPlot) plot(x, pch=15, cex=0.5, ...)
 		nbrOfSegs <- nrow(segsFinal)
 		med <- vector(length=nbrOfSegs)
 		m <- vector(length=nbrOfSegs)
@@ -138,10 +146,8 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 			y <- x[segsFinal$start[i]:segsFinal$end[i]]
 			m[i] <- mean(y)
 			med[i] <- median(y)
-			
-			if (segPlot) lines(c(segsFinal$start[i], segsFinal$end[i]), 
-						c(med[i], med[i]), lwd=5, col="green")
 		}
+		
 		df2 <- data.frame("start"=segsFinal$start, "end"=segsFinal$end, 
 				"mean"=m, "median"=med)
 		
@@ -159,26 +165,14 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 		irLoss <- IRanges::reduce(irLoss)
 		
 		ir <- IRanges::sort(c(irAmp, irLoss))
-        
 		ir <- ir[which(width(ir)>=minSeg)]
 		
 		rm(irAmp, irLoss, dfAmp, dfLoss)    
 		
-		irAll <- IRanges::IRanges(1, length(x))
-        
-        ##############################################
-#        browser()
-#        showMethods("setdiff")
-#        selectMethod("setdiff", c("IRanges", "IRanges"))
-#            solved by:
-#            importFrom(IRanges,sort)
-#            importFrom(IRanges,as.data.frame)
-#            importFrom(BiocGenerics,setdiff)
-        ##############################################
-
-		segsFinal <- as.data.frame(sort(c(ir, BiocGenerics::setdiff(irAll, ir))))
+		irAll <- IRanges(1, length(x))
+		segsFinal <- as.data.frame(sort(
+						c(ir, BiocGenerics::setdiff(irAll, ir))))
 		
-		if (segPlot) plot(x, pch=15, cex=0.5, ...)
 		nbrOfSegs <- nrow(segsFinal)
 		med <- vector(length=nbrOfSegs)
 		m <- vector(length=nbrOfSegs)
@@ -188,9 +182,6 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 			y <- x[segsFinal$start[i]:segsFinal$end[i]]
 			m[i] <- mean(y)
 			med[i] <- median(y)
-			
-			if (segPlot) lines(c(segsFinal$start[i], segsFinal$end[i]), 
-						c(med[i], med[i]), lwd=5, col="green")
 		}
 		
 		df2 <- data.frame("start"=segsFinal$start, "end"=segsFinal$end, 
@@ -215,7 +206,7 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 #' @param alpha A value between 0 and 1 is interpreted as the ratio of
 #' initial breakpoints. An integer greater than one is interpreted as number
 #' of desired breakpoints. Increasing this parameter leads to more segments. 
-#' (Default = 0.05)
+#' (Default = 0.1)
 #' @param segMedianT A numeric vector of length two with the thresholds of 
 #' segments' median values that are considered as significant. Only segments
 #' with a median above the first or below the second value are kept in a final
@@ -226,7 +217,7 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 #' values with a minimium distance of "eps" are tested. This makes the 
 #' segmentation algorithm even faster. If all values should be tested "eps" can
 #' be set to zero. If missing the algorithm will try to find a reasonable value
-#' by using quantiles. (Default "missing".)
+#' by using quantiles. (Default = 0.)
 #' @param delta Segment extension parameter. If delta consecutive extensions
 #' of the left and the right segment do not lead to a better p-value the testing
 #' is stopped. (Default = 5).
@@ -295,9 +286,9 @@ segmentGeneral <- function(x, type = 2, alpha = 0.05, segMedianT, minSeg = 4,
 
 
 fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4, 
-        eps = 0, delta = 5, maxInt = 40, squashing = 0, cyberWeight = 10, ...) {
+		eps = 0, delta = 5, maxInt = 40, squashing = 0, cyberWeight = 10) {
 	if (inherits(x, "ExpressionSet")) {
-	
+		
 		
 		if (!("intensity" %in% names(assayData(x)))) {
 			stop("ExpressionSet needs to have an assayData slot named intensity!")
@@ -322,8 +313,7 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
 				sample <- sampleNames(x)[sampleIdx]
 				
 				resTmp <- segmentGeneral(z01, type, alpha, segMedianT, minSeg, 
-						eps, delta, maxInt, squashing, cyberWeight, 
-						segPlot = FALSE, ...)$finalSegments
+						eps, delta, maxInt, squashing, cyberWeight)$finalSegments
 				resTmp$sample <- sample
 				res[[sampleIdx]] <- resTmp
 			}
@@ -356,113 +346,110 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
 				seg.mean  = res03$seg.mean,
 				startRow  = res03$startRow,
 				endRow    = res03$endRow)
-    } else if (inherits(x, "GRanges")) {
+	} else if (inherits(x, "GRanges")) {
 #        if (!all(lapply(IRanges::elementMetadata(x), mode) == "numeric")) {
 #            stop("All elementMetadata of GRanges object needs to be numeric!")
 #		}
 #        
-        y <- split(x, as.character(seqnames(x)))
+		y <- split(x, as.character(seqnames(x)))
 		
-        nbrOfSeq <- length(y)
-             
-        res02 <- list()
-        for (seq in seq_len(nbrOfSeq)) {
-            x <- y[[seq]]
-            
-            res <- list()
-            for (sampleIdx in seq_len(ncol(elementMetadata(x)))) {
-                z01 <- elementMetadata(x)[[sampleIdx]]
-                sample <- names(elementMetadata(x))[sampleIdx]
-                resTmp <- segmentGeneral(z01, type, alpha, segMedianT, minSeg, 
-                        eps, delta, maxInt, squashing, cyberWeight, 
-                        segPlot = FALSE, ...)$finalSegments
-                resTmp$sample <- sample
-                res[[sampleIdx]] <- resTmp
-            }
+		nbrOfSeq <- length(y)
+		
+		res02 <- list()
+		for (seq in seq_len(nbrOfSeq)) {
+			x <- y[[seq]]
 			
-            res <- do.call("rbind", res)
-            
-            res$num.mark <- res$end - res$start
-            
-            chrom <- as.character(seqnames(x)[1])
-            start <- start(x)[res$start]
-            end <- start(x)[res$end] + width(x)[res$end]-1
-            
-            resX <- data.frame(
-                    ID = res$sample, 
-                    chrom = chrom, 
-                    loc.start = start, 
-                    loc.end = end, 
-                    num.mark = res$num.mark, 
-                    seg.mean = res$mean, 
-                    startRow = res$start, 
-                    endRow = res$end,stringsAsFactors=FALSE)
-            resX <- resX[order(resX$chrom,resX$loc.start), ]
-            res02[[seq]] <- resX
-            
-        }
+			res <- list()
+			for (sampleIdx in seq_len(ncol(elementMetadata(x)))) {
+				z01 <- elementMetadata(x)[[sampleIdx]]
+				sample <- names(elementMetadata(x))[sampleIdx]
+				resTmp <- segmentGeneral(z01, type, alpha, segMedianT, minSeg, 
+						eps, delta, maxInt, squashing, cyberWeight)$finalSegments
+				resTmp$sample <- sample
+				res[[sampleIdx]] <- resTmp
+			}
+			
+			res <- do.call("rbind", res)
+			
+			res$num.mark <- res$end - res$start
+			
+			chrom <- as.character(seqnames(x)[1])
+			start <- start(x)[res$start]
+			end <- start(x)[res$end] + width(x)[res$end]-1
+			
+			resX <- data.frame(
+					ID = res$sample, 
+					chrom = chrom, 
+					loc.start = start, 
+					loc.end = end, 
+					num.mark = res$num.mark, 
+					seg.mean = res$mean, 
+					startRow = res$start, 
+					endRow = res$end,stringsAsFactors=FALSE)
+			resX <- resX[order(resX$chrom,resX$loc.start), ]
+			res02[[seq]] <- resX
+			
+		}
 		
-        res03 <- do.call("rbind", res02)
-        
-        finalRes <- GRanges(seqnames = Rle(res03$chrom),
-                ranges   = IRanges(start = res03$loc.start, end = res03$loc.end),
-                ID = res03$ID, 
-                num.mark  = res03$num.mark,
-                seg.mean  = res03$seg.mean,
-                startRow  = res03$startRow,
-                endRow    = res03$endRow)
-        
-    } else if (is.matrix(x)) {
-        nbrOfSamples <- ncol(x)
+		res03 <- do.call("rbind", res02)
+		
+		finalRes <- GRanges(seqnames = Rle(res03$chrom),
+				ranges   = IRanges(start = res03$loc.start, end = res03$loc.end),
+				ID = res03$ID, 
+				num.mark  = res03$num.mark,
+				seg.mean  = res03$seg.mean,
+				startRow  = res03$startRow,
+				endRow    = res03$endRow)
+		
+	} else if (is.matrix(x)) {
+		nbrOfSamples <- ncol(x)
 		if (is.null(colnames(x))){
 			colnames(x) <- paste("Sample",1:ncol(x),sep="_")
 		}
-        samples <- colnames(x)
-        
-        segsTmp <- list()
-        for (i in seq_len(nbrOfSamples)) {
-            segsTmp[[i]] <- segmentGeneral(x[, i], type, alpha, segMedianT, minSeg, 
-                    eps, delta, maxInt, squashing, cyberWeight, 
-                    segPlot = FALSE, ...)$finalSegments
-            segsTmp[[i]]$sample <- samples[i]
-        }
-        
-        res02 <- do.call("rbind", segsTmp)
-        
-        finalRes <- GRanges(seqnames = Rle(rep(1, nrow(res02))),
-                ranges   = IRanges(start = res02$start, end = res02$end),
-                ID = res02$sample, 
-                num.mark  = res02$end - res02$start + 1,
-                seg.mean  = res02$mean,
-                startRow  = res02$start,
-                endRow    = res02$end)
-        
-    } else if (is.vector(x)) {
+		samples <- colnames(x)
+		
+		segsTmp <- list()
+		for (i in seq_len(nbrOfSamples)) {
+			segsTmp[[i]] <- segmentGeneral(x[, i], type, alpha, segMedianT, minSeg, 
+					eps, delta, maxInt, squashing, cyberWeight)$finalSegments
+			segsTmp[[i]]$sample <- samples[i]
+		}
+		
+		res02 <- do.call("rbind", segsTmp)
+		
+		finalRes <- GRanges(seqnames = Rle(rep(1, nrow(res02))),
+				ranges   = IRanges(start = res02$start, end = res02$end),
+				ID = res02$sample, 
+				num.mark  = res02$end - res02$start + 1,
+				seg.mean  = res02$mean,
+				startRow  = res02$start,
+				endRow    = res02$end)
+		
+	} else if (is.vector(x)) {
 		
 		
-        res02 <- segmentGeneral(x, type, alpha, segMedianT, minSeg, 
-                eps, delta, maxInt, squashing, cyberWeight, 
-                segPlot = FALSE, ...)$finalSegments
-               
-        finalRes <- GRanges(seqnames = Rle(rep(1, nrow(res02))),
-                ranges   = IRanges(start = res02$start, end = res02$end),
-                ID = rep("sample1", nrow(res02)), 
-                num.mark  = res02$end - res02$start + 1,
-                seg.mean  = res02$mean,
-                startRow  = res02$start,
-                endRow    = res02$end)
-        
-    } else {
-        
-        stop("GRanges object, vector or matrix as input expected!")    
-        
-    }
-    
-    finalRes <- finalRes[order(
-                    as.character(elementMetadata(finalRes)$ID), 
-                    (as.character(seqnames(finalRes))), 
-                    as.numeric(start(finalRes))), ]
-    
-    return(finalRes)
-    
+		res02 <- segmentGeneral(x, type, alpha, segMedianT, minSeg, 
+				eps, delta, maxInt, squashing, cyberWeight)$finalSegments
+		
+		finalRes <- GRanges(seqnames = Rle(rep(1, nrow(res02))),
+				ranges   = IRanges(start = res02$start, end = res02$end),
+				ID = rep("sample1", nrow(res02)), 
+				num.mark  = res02$end - res02$start + 1,
+				seg.mean  = res02$mean,
+				startRow  = res02$start,
+				endRow    = res02$end)
+		
+	} else {
+		
+		stop("GRanges object, vector or matrix as input expected!")    
+		
+	}
+	
+	finalRes <- finalRes[order(
+					as.character(elementMetadata(finalRes)$ID), 
+					(as.character(seqnames(finalRes))), 
+					as.numeric(start(finalRes))), ]
+	
+	return(finalRes)
+	
 }
