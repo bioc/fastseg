@@ -38,7 +38,7 @@
 #' fastseg(x)
 #' @importFrom IRanges sort
 #' @importFrom IRanges as.data.frame
-#' @importFrom BiocGenerics setdiff
+#' @importFrom IRanges setdiff
 #' @return A data frame containing the segments.
 #' @author Guenter Klambauer \email{klambauer@@bioinf.jku.at}
 #' @noRd
@@ -135,7 +135,7 @@ segmentGeneral <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
 		
 		irAll <- IRanges::IRanges(1, length(x))
 		segsFinal <- IRanges::as.data.frame(IRanges::sort(
-						c(ir, BiocGenerics::setdiff(irAll, ir))))
+						c(ir, IRanges::setdiff(irAll, ir))))
 		
 		nbrOfSegs <- nrow(segsFinal)
 		med <- vector(length=nbrOfSegs)
@@ -171,7 +171,7 @@ segmentGeneral <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
 		
 		irAll <- IRanges(1, length(x))
 		segsFinal <- as.data.frame(sort(
-						c(ir, BiocGenerics::setdiff(irAll, ir))))
+						c(ir, IRanges::setdiff(irAll, ir))))
 		
 		nbrOfSegs <- nrow(segsFinal)
 		med <- vector(length=nbrOfSegs)
