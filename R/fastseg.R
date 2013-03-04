@@ -300,7 +300,11 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
 			stop("sampleNames must be assigned and have a correct dimension!")
 		}
 		
-		y <- split(x, featureData(x)$chrom)
+    y <- lapply(unique(featureData(x)$chrom), function (chr, data) { 
+          data[which(featureData(data)$chrom == chr), , drop = FALSE] 
+        }, data=x)
+    names(y) <- unique(featureData(x)$chrom)
+    
 		nbrOfSeq <- length(y)
 		
 		res02 <- list()
