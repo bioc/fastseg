@@ -77,11 +77,7 @@ segmentGeneral <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
 	if (minSeg < 2) minSeg <- 2
 	if (maxInt < (minSeg+5)) maxInt <- minSeg+5
 	if (cyberWeight < 0) cyberWeight <- 0
-	
-	
-	
-
-	
+		
 	if (missing("eps")) {
 		eps <- quantile(abs(diff(x)), probs=0.75)
 	}
@@ -107,53 +103,51 @@ segmentGeneral <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
 						"greater than 1."))
 	}
 	
-	brkptsInit <- unique(c(0, brkptsInit, length(x)))
-	nbrOfBrkpts <- length(brkptsInit)-1
+	m <- length(x)
+	nbrOfBrkpts <- length(brkptsInit)+1
+	start <- c(1,brkptsInit+1)
+	end <- c(brkptsInit,m)
+	brkptsInit <- c(0, brkptsInit, m)
 	
-	med <- vector(length=nbrOfBrkpts)
-	m <- vector(length=nbrOfBrkpts)
-	start <- vector(length=nbrOfBrkpts)
-	end <- vector(length=nbrOfBrkpts)
 	
-	for (i in seq_len(nbrOfBrkpts)){
-		y <- x[(brkptsInit[i]+1):brkptsInit[i+1]]
-		m[i] <- mean(y)
-		med[i] <- median(y)
-		start[i] <- brkptsInit[i]+1
-		end[i] <- brkptsInit[i+1]
-	}
-
-	df <- data.frame("start"=start, "end"=end, "mean"=m, "median"=med)
+	avgs <- sapply(2:(nbrOfBrkpts+1),function(i){ 
+						c(median(x[((brkptsInit[i-1]+1):brkptsInit[i])]),
+								mean(x[((brkptsInit[i-1]+1):brkptsInit[i])]))
+					}
+			)
+	
+			
+	df <- data.frame("start"=start, "end"=end, "mean"=avgs[2, ], 
+			"median"=avgs[1, ])
 	
 	
 	if (all(segMedianT==0)) {
 		
 		#message("No merging of segments.")
 		ir <- IRanges::IRanges(df$start, df$end)
-		ir <- ir[which(width(ir)>=minSeg)]
+		ir <- ir[which(IRanges::width(ir)>=minSeg)]
 		
 		
 		irAll <- IRanges::IRanges(1, length(x))
 		segsFinal <- IRanges::as.data.frame(IRanges::sort(
 						c(ir, IRanges::setdiff(irAll, ir))))
 		
-		nbrOfSegs <- nrow(segsFinal)
-		med <- vector(length=nbrOfSegs)
-		m <- vector(length=nbrOfSegs)
-		start <- vector(length=nbrOfSegs)
-		end <- vector(length=nbrOfSegs)
-		for (i in seq_len(nbrOfSegs)) {
-			y <- x[segsFinal$start[i]:segsFinal$end[i]]
-			m[i] <- mean(y)
-			med[i] <- median(y)
-		}
+		bIdx <- c(0,segsFinal$end)
+		
+		avgs <- sapply(2:(length(bIdx)),function(i){ 
+					c(median(x[((bIdx[i-1]+1):bIdx[i])]),
+							mean(x[((bIdx[i-1]+1):bIdx[i])]))
+				}
+		)
 		
 		df2 <- data.frame("start"=segsFinal$start, "end"=segsFinal$end, 
-				"mean"=m, "median"=med)
+				"mean"=avgs[2,], "median"=avgs[1,])
+		
 		
 		l <- list(df2, df)
 		names(l) <- c("finalSegments", "unmergedSegments")
 		return(l)
+		
 		
 	} else {
 		dfAmp <- df[which(df$median > segMedianT[1]), ]
@@ -165,7 +159,7 @@ segmentGeneral <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
 		irLoss <- IRanges::reduce(irLoss)
 		
 		ir <- IRanges::sort(c(irAmp, irLoss))
-		ir <- ir[which(width(ir)>=minSeg)]
+		ir <- ir[which(IRanges::width(ir)>=minSeg)]
 		
 		rm(irAmp, irLoss, dfAmp, dfLoss)    
 		
@@ -173,19 +167,17 @@ segmentGeneral <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
 		segsFinal <- as.data.frame(sort(
 						c(ir, IRanges::setdiff(irAll, ir))))
 		
-		nbrOfSegs <- nrow(segsFinal)
-		med <- vector(length=nbrOfSegs)
-		m <- vector(length=nbrOfSegs)
-		start <- vector(length=nbrOfSegs)
-		end <- vector(length=nbrOfSegs)
-		for (i in seq_len(nbrOfSegs)) {
-			y <- x[segsFinal$start[i]:segsFinal$end[i]]
-			m[i] <- mean(y)
-			med[i] <- median(y)
-		}
+		bIdx <- c(0,segsFinal$end)
+		
+		avgs <- sapply(2:(length(bIdx)),function(i){ 
+					c(median(x[((bIdx[i-1]+1):bIdx[i])]),
+							mean(x[((bIdx[i-1]+1):bIdx[i])]))
+				}
+		)
 		
 		df2 <- data.frame("start"=segsFinal$start, "end"=segsFinal$end, 
-				"mean"=m, "median"=med)
+				"mean"=avgs[2, ], "median"=avgs[1, ])
+		
 		
 		l <- list(df2, df)
 		names(l) <- c("finalSegments", "unmergedSegments")
@@ -300,6 +292,7 @@ fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
 			stop("sampleNames must be assigned and have a correct dimension!")
 		}
 		
+
     y <- lapply(unique(featureData(x)$chrom), function (chr, data) { 
           data[which(featureData(data)$chrom == chr), , drop = FALSE] 
         }, data=x)

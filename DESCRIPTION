@@ -23,7 +23,7 @@ Description: fastseg implements a very fast and efficient
     and that a dynamic programming approach is used for
     calculation of the segments' first and higher order
     moments.
-Version: 1.7.0
+Version: 1.7.1
 URL: http://www.bioinf.jku.at/software/fastseg/fastseg.html
 Depends:
     R (>= 2.13),
