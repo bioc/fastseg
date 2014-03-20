@@ -42,7 +42,7 @@
 #' @return A data frame containing the segments.
 #' @author Guenter Klambauer \email{klambauer@@bioinf.jku.at}
 #' @noRd
-segmentGeneral <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4, 
+segmentGeneral <- function(x, type = 1, alpha = 0.05, segMedianT, minSeg = 4, 
 		eps=0, delta = 5, maxInt = 10, squashing = 0, cyberWeight = 10) {
 	if (any(!is.finite(x))){
 		message("Detected infinite values in the data. Replacing with max/min!")
@@ -277,11 +277,10 @@ segmentGeneral <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
 #' res <- fastseg(data2)
 
 
-fastseg <- function(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4, 
+fastseg <- function(x, type = 1, alpha = 0.05, segMedianT, minSeg = 4, 
 		eps = 0, delta = 5, maxInt = 40, squashing = 0, cyberWeight = 10) {
 	if (inherits(x, "ExpressionSet")) {
-		
-		
+				
 		if (!("intensity" %in% names(assayData(x)))) {
 			stop("ExpressionSet needs to have an assayData slot named intensity!")
 		} 
