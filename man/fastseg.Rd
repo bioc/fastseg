@@ -3,7 +3,7 @@
 \title{Detection of breakpoints using a fast segmentation algorithm based
 on the cyber t-test.}
 \usage{
-  fastseg(x, type = 1, alpha = 0.1, segMedianT, minSeg = 4,
+  fastseg(x, type = 1, alpha = 0.05, segMedianT, minSeg = 4,
     eps = 0, delta = 5, maxInt = 40, squashing = 0,
     cyberWeight = 10)
 }
