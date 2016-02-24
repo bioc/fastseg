@@ -124,13 +124,12 @@ segmentGeneral <- function(x, type = 1, alpha = 0.05, segMedianT, minSeg = 4,
 	if (all(segMedianT==0)) {
 		
 		#message("No merging of segments.")
-		ir <- IRanges::IRanges(df$start, df$end)
-		ir <- ir[which(IRanges::width(ir)>=minSeg)]
+		ir <- IRanges(df$start, df$end)
+		ir <- ir[which(width(ir)>=minSeg)]
 		
 		
-		irAll <- IRanges::IRanges(1, length(x))
-		segsFinal <- IRanges::as.data.frame(IRanges::sort(
-						c(ir, IRanges::setdiff(irAll, ir))))
+		irAll <- IRanges(1, length(x))
+		segsFinal <- as.data.frame(sort(c(ir, setdiff(irAll, ir))))
 		
 		bIdx <- c(0,segsFinal$end)
 		
@@ -151,21 +150,21 @@ segmentGeneral <- function(x, type = 1, alpha = 0.05, segMedianT, minSeg = 4,
 		
 	} else {
 		dfAmp <- df[which(df$median > segMedianT[1]), ]
-		irAmp <- IRanges::IRanges(dfAmp$start, dfAmp$end)
-		irAmp <- IRanges::reduce(irAmp)
+		irAmp <- IRanges(dfAmp$start, dfAmp$end)
+		irAmp <- reduce(irAmp)
 		
 		dfLoss <- df[which(df$median < segMedianT[2]), ]
-		irLoss <- IRanges::IRanges(dfLoss$start, dfLoss$end)
-		irLoss <- IRanges::reduce(irLoss)
+		irLoss <- IRanges(dfLoss$start, dfLoss$end)
+		irLoss <- reduce(irLoss)
 		
-		ir <- IRanges::sort(c(irAmp, irLoss))
-		ir <- ir[which(IRanges::width(ir)>=minSeg)]
+		ir <- sort(c(irAmp, irLoss))
+		ir <- ir[which(width(ir)>=minSeg)]
 		
 		rm(irAmp, irLoss, dfAmp, dfLoss)    
 		
 		irAll <- IRanges(1, length(x))
 		segsFinal <- as.data.frame(sort(
-						c(ir, IRanges::setdiff(irAll, ir))))
+						c(ir, setdiff(irAll, ir))))
 		
 		bIdx <- c(0,segsFinal$end)
 		
@@ -250,15 +249,15 @@ segmentGeneral <- function(x, type = 1, alpha = 0.05, segMedianT, minSeg = 4,
 #' ## with both individuals
 #' gr <- GRanges(seqnames=chrom,
 #'         ranges=IRanges(maploc, end=maploc))
-#' elementMetadata(gr) <- data
-#' colnames(elementMetadata(gr)) <- samplenames
+#' mcols(gr) <- data
+#' colnames(mcols(gr)) <- samplenames
 #' res <- fastseg(gr)
 #' 
 #' ## with one individual
 #' gr2 <- gr
 #' data2 <- as.matrix(data[, 1])
 #' colnames(data2) <- "sample1"
-#' elementMetadata(gr2) <- data2
+#' mcols(gr2) <- data2
 #' res <- fastseg(gr2)
 #' 
 #' 
@@ -343,8 +342,8 @@ fastseg <- function(x, type = 1, alpha = 0.05, segMedianT, minSeg = 4,
 				startRow  = res03$startRow,
 				endRow    = res03$endRow)
 	} else if (inherits(x, "GRanges")) {
-#        if (!all(lapply(IRanges::elementMetadata(x), mode) == "numeric")) {
-#            stop("All elementMetadata of GRanges object needs to be numeric!")
+#        if (!all(lapply(mcols(x), mode) == "numeric")) {
+#            stop("All mcols of GRanges object needs to be numeric!")
 #		}
 #        
 		y <- split(x, as.character(seqnames(x)))
@@ -356,9 +355,9 @@ fastseg <- function(x, type = 1, alpha = 0.05, segMedianT, minSeg = 4,
 			x <- y[[seq]]
 			
 			res <- list()
-			for (sampleIdx in seq_len(ncol(elementMetadata(x)))) {
-				z01 <- elementMetadata(x)[[sampleIdx]]
-				sample <- names(elementMetadata(x))[sampleIdx]
+			for (sampleIdx in seq_len(ncol(mcols(x)))) {
+				z01 <- mcols(x)[[sampleIdx]]
+				sample <- names(mcols(x))[sampleIdx]
 				resTmp <- segmentGeneral(z01, type, alpha, segMedianT, minSeg, 
 						eps, delta, maxInt, squashing, cyberWeight)$finalSegments
 				resTmp$sample <- sample
@@ -442,7 +441,7 @@ fastseg <- function(x, type = 1, alpha = 0.05, segMedianT, minSeg = 4,
 	}
 	
 	finalRes <- finalRes[order(
-					as.character(elementMetadata(finalRes)$ID), 
+					as.character(mcols(finalRes)$ID), 
 					(as.character(seqnames(finalRes))), 
 					as.numeric(start(finalRes))), ]
 	

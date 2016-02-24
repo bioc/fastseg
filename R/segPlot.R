@@ -51,8 +51,8 @@
 #' library("GenomicRanges")
 #' gr <- GRanges(seqnames=chrom,
 #' 		ranges=IRanges(maploc, end=maploc))
-#' elementMetadata(gr) <- data
-#' colnames(elementMetadata(gr)) <- samplenames
+#' mcols(gr) <- data
+#' colnames(mcols(gr)) <- samplenames
 #' res <- fastseg(gr)
 #' segPlot(gr,res)
 #' @return A plot of the values and segments. 

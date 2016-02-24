@@ -20,10 +20,10 @@ Description: fastseg implements a very fast and efficient segmentation
         sampling is not necessary in for fastseg and that a dynamic
         programming approach is used for calculation of the segments'
         first and higher order moments.
-Version: 1.17.0
+Version: 1.17.1
 URL: http://www.bioinf.jku.at/software/fastseg/fastseg.html
 Depends: R (>= 2.13), GenomicRanges, Biobase
-Imports: graphics, stats, IRanges, BiocGenerics
+Imports: methods, graphics, stats, BiocGenerics, S4Vectors, IRanges
 Suggests: DNAcopy, oligo
 Collate: 'roxygen.R' 'toDnaCopy.R' 'fastseg.R' 'segPlot.R'
 biocViews: Classification, CopyNumberVariation

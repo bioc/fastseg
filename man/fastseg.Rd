@@ -91,15 +91,15 @@ library("GenomicRanges")
 ## with both individuals
 gr <- GRanges(seqnames=chrom,
         ranges=IRanges(maploc, end=maploc))
-elementMetadata(gr) <- data
-colnames(elementMetadata(gr)) <- samplenames
+mcols(gr) <- data
+colnames(mcols(gr)) <- samplenames
 res <- fastseg(gr)
 
 ## with one individual
 gr2 <- gr
 data2 <- as.matrix(data[, 1])
 colnames(data2) <- "sample1"
-elementMetadata(gr2) <- data2
+mcols(gr2) <- data2
 res <- fastseg(gr2)
 
 

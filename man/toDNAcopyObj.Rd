@@ -50,8 +50,8 @@ library("GenomicRanges")
 ## with both individuals
 gr <- GRanges(seqnames=chrom,
         ranges=IRanges(maploc, end=maploc))
-elementMetadata(gr) <- data
-colnames(elementMetadata(gr)) <- samplenames
+mcols(gr) <- data
+colnames(mcols(gr)) <- samplenames
 res <- fastseg(gr)
 
 segres <- toDNAcopyObj(
@@ -65,7 +65,7 @@ segres <- toDNAcopyObj(
 gr2 <- gr
 data2 <- as.matrix(data[, 1])
 colnames(data2) <- "sample1"
-elementMetadata(gr2) <- data2
+mcols(gr2) <- data2
 res <- fastseg(gr2)
 
 segres <- toDNAcopyObj(
@@ -73,7 +73,7 @@ segres <- toDNAcopyObj(
         chrom       = as.character(seqnames(gr)),
         maploc      = as.numeric(start(gr)),
         genomdat    = as.matrix(data2),
-        sampleNames = unique(elementMetadata(res)$ID))
+        sampleNames = unique(mcols(res)$ID))
 
 
 ###########################################################
