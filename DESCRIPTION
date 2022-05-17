@@ -21,7 +21,7 @@ Description: fastseg implements a very fast and efficient segmentation
         programming approach is used for calculation of the segments'
         first and higher order moments.
 Version: 1.43.3
-URL: http://www.bioinf.jku.at/software/fastseg/fastseg.html
+URL: http://www.bioinf.jku.at/software/fastseg/index.html
 Depends: R (>= 2.13), GenomicRanges, Biobase
 Imports: methods, graphics, stats, BiocGenerics, S4Vectors, IRanges
 Suggests: DNAcopy, oligo
