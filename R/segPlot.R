@@ -56,7 +56,7 @@
 #' res <- fastseg(gr)
 #' segPlot(gr,res)
 #' @return A plot of the values and segments. 
-#' @author klambaue
+#' @author Guenter Klambauer
 #' @export
 segPlot <- function(x,res,
 		plot.type="chrombysample", 
