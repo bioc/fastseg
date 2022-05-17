@@ -219,7 +219,6 @@ segmentGeneral <- function(x, type = 1, alpha = 0.05, segMedianT, minSeg = 4,
 #' @param cyberWeight The nu parameter of the cyber t-test. Can be interpreted
 #' as the weight of the global variance. The higher the value the more small 
 #' segments with high variance will be significant. (Default = 10). 
-#' @param ... Further arguments passed to the plot function.
 #' @return A data frame containing the segments.
 #' @author Guenter Klambauer \email{klambauer@@bioinf.jku.at}
 #' @export

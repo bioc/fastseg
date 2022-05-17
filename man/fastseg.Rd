@@ -56,8 +56,6 @@ on the cyber t-test.}
   The higher the value the more small segments with high
   variance will be significant. (Default = 10).}
 
-  \item{...}{Further arguments passed to the plot
-  function.}
 }
 \value{
   A data frame containing the segments.
