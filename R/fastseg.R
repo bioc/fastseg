@@ -36,9 +36,9 @@
 #' x <- rnorm(n=500,sd=0.5)
 #' x[150:200] <- rnorm(n=51,mean=3,sd=0.5)
 #' fastseg(x)
-#' @importFrom IRanges sort
-#' @importFrom IRanges as.data.frame
-#' @importFrom IRanges setdiff
+#' @import BiocGenerics
+#' @importFrom IRanges IRanges reduce
+#' @importFrom stats median quantile
 #' @return A data frame containing the segments.
 #' @author Guenter Klambauer \email{klambauer@@bioinf.jku.at}
 #' @noRd
@@ -222,7 +222,10 @@ segmentGeneral <- function(x, type = 1, alpha = 0.05, segMedianT, minSeg = 4,
 #' @return A data frame containing the segments.
 #' @author Guenter Klambauer \email{klambauer@@bioinf.jku.at}
 #' @export
-#' @useDynLib fastseg
+#' @importFrom S4Vectors Rle
+#' @import Biobase
+#' @import GenomicRanges
+#' @useDynLib fastseg, .registration = TRUE
 #' @examples
 #' library(fastseg)
 #' 

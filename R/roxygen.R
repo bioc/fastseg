@@ -30,7 +30,5 @@ NULL
 #' @keywords data
 NULL
 
-#' @importFrom graphics lines plot
-#' @importFrom stats, median, quantile, sd
-#' @importFrom IRanges, IRanges, as.data.frame, sort, setdiff, reduce
-
+#' @import methods
+NULL

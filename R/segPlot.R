@@ -57,6 +57,10 @@
 #' segPlot(gr,res)
 #' @return A plot of the values and segments. 
 #' @author Guenter Klambauer
+#' @importFrom grDevices dev.cur dev.interactive dev.new
+#' @importFrom graphics abline axis layout lines mtext par title
+#' @importFrom S4Vectors values
+#' @import GenomicRanges
 #' @export
 segPlot <- function(x,res,
 		plot.type="chrombysample", 
