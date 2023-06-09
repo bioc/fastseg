@@ -1,0 +1,264 @@
+---
+title: "An R Package for fast segmentation"
+authors:
+  - name: "Günter Klambauer"
+    affiliation: "Institute of Bioinformatics, Johannes Kepler University Linz
+                  Altenberger Str. 69, 4040 Linz, Austria"
+  - name: "Andreas Mitterecker"
+    affiliation: "Institute of Bioinformatics, Johannes Kepler University Linz
+                  Altenberger Str. 69, 4040 Linz, Austria"
+date: "`r format(Sys.time(), '%B %d , %Y')`"
+package: fastseg
+vignette: >
+  %\VignetteIndexEntry{An R Package for fast segmentation}
+  %\VignetteIndexEntry{fastseg: Manual for the R package}
+  %\VignetteDepends{fastseg}
+  %\VignettePackage{fastseg}
+  %\VignetteKeywords{copy number analysis, segmentation,
+  % CNV, copy number variant}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+  BiocStyle::html_document
+bibliography: fastseg.bib
+reference-section-title: References
+link-citations: yes
+---
+
+
+```{r echo=FALSE}
+options(width=80)
+set.seed(0)
+fastsegVersion <- packageDescription("fastseg")$Version
+```
+
+## Scope and Purpose of this Document {#scope-and-purpose-of-this-document .unnumbered}
+
+This document is a user manual for the R package `fastseg`. It is only
+meant as a gentle introduction into how to use the basic functions
+implemented in this package. Not all features of the R package are
+described in full detail. Such details can be obtained from the
+documentation enclosed in the R package. Further note the following: (1)
+this is neither an introduction to segmentation algorithms; (2) this is
+not an introduction to R. If you lack the background for understanding
+this manual, you first have to read introductory literature on these
+subjects.
+
+# Introduction
+
+`fastseg` implements a very fast and efficient segmentation algorithm.
+It has similar functionality as `DNACopy` [@Olshen:04] but is
+considerably faster and more flexible. `fastseg` can segment data
+stemming from DNA microarrays and data stemming from next generation
+sequencing for example to detect copy number segments. Further it can
+segment data stemming from RNA microarrays like tiling arrays to
+identify transcripts. Most generally, it can segment data given as a
+matrix or as a vector. Various data formats can be used as input to
+`fastseg` like expression set objects for microarrays or GRanges for
+sequencing data.
+
+The segmentation criterion of `fastseg` is based on a statistical test
+in a Bayesian framework, namely the cyber t-test [@Baldi:01]. The
+speed-up stems from the facts, that sampling is not necessary in for
+`fastseg` and that a dynamic programming approach is used for
+calculation of the segments' first and higher order moments.
+
+For further information regarding the algorithm and its assessment see
+the fastseg homepage at
+<http://www.bioinf.jku.at/software/fastseg/fastseg.html>
+
+# Getting started
+
+To load the package, enter the following in your R session: 
+
+```{r message=FALSE}
+library(fastseg)
+```
+
+## Data
+
+According to the DNAcopy package from bioconductor we selected a subset
+of the data set presented in [@Snijders:01]. This data set will be
+called `coriell`. The data correspond to two array CGH studies of
+fibroblast cell strains. [^1] In particular, the studies **GM05296** and
+**GM13330** were chosen. After selecting only the mapped data from
+chromosomes 1-22 and X, there are 2271 data points.
+
+To prepare the data for our examples we execute the following code:
+
+```{r echo=TRUE}
+data(coriell)
+head(coriell)
+
+samplenames <- colnames(coriell)[4:5]
+data <- as.matrix(coriell[4:5])
+#data[is.na(data)] <- median(data, na.rm=TRUE)
+chrom <- coriell$Chromosome
+maploc <- coriell$Position
+```
+
+The main functions of the package are `fastseg` and `toDNAcopyObj`. The
+first on runs the segmentation algorithm and the latter converts the
+segmentation results the a DNAcopy object which will be quite helpful
+for plot functions.
+
+## File formats
+
+The package can handle different file formats: GRanges, ExpressionSet
+objects, matrix or a vector.
+
+### Vector
+
+```{r}
+data2 <- data[, 1]
+res <- fastseg(data2)
+head(res)
+```
+
+
+### Matrix
+
+```{r}
+data2 <- data[1:400, ]
+res <- fastseg(data2)
+head(res)
+```
+
+### GRanges objects
+
+```{r}
+library("GenomicRanges")
+
+## with both individuals
+gr <- GRanges(seqnames=chrom,
+        ranges=IRanges(maploc, end=maploc))
+mcols(gr) <- data
+colnames(mcols(gr)) <- samplenames
+res <- fastseg(gr)
+head(res)
+
+## with one individual
+gr2 <- gr
+data2 <- as.matrix(data[, 1])
+colnames(data2) <- "sample1"
+mcols(gr2) <- data2
+res <- fastseg(gr2)
+head(res)
+```
+
+### ExpressionSet objects
+
+```{r message=FALSE}
+library(oligo)
+eSet <- new("ExpressionSet")
+assayData(eSet) <- list(intensity=data)
+
+featureData(eSet) <- new("AnnotatedDataFrame", 
+        data=data.frame(
+                chrom = paste("chr",chrom,sep=""),
+                start = maploc, 
+                end   = maploc,stringsAsFactors=FALSE))
+phenoData(eSet) <- new("AnnotatedDataFrame", 
+        data=data.frame(samples=samplenames))
+sampleNames(eSet) <- samplenames
+res <- fastseg(eSet)
+head(res)
+```
+
+### Vector
+
+```{r}
+data2 <- data[, 1]
+res <- fastseg(data2)
+head(res)
+```
+
+### Matrix
+
+```{r}
+data2 <- data[1:400, ]
+res <- fastseg(data2)
+head(res)
+```
+
+## Plotting the segmentation results
+
+For plotting the data we have to generate an `DNAcopy` object out of the
+segmentation results:
+
+```{r}
+## with both individuals
+gr <- GRanges(seqnames=chrom,
+        ranges=IRanges(maploc, end=maploc))
+mcols(gr) <- data
+colnames(mcols(gr)) <- samplenames
+res <- fastseg(gr,segMedianT=0.2)
+```
+
+The plotting is done via the `plot` function of `DNAcopy`:
+
+::: center
+```{r fig=TRUE}
+segPlot(gr,res, plot.type="w")
+```
+:::
+
+Or alternatively:
+
+::: center
+```{r fig=TRUE, fig.height=10, fig.width=10}
+segPlot(gr,res, plot.type="s")
+```
+:::
+
+## Performance of the method
+
+Here we show that `fastseg` outperforms `DNAcopy` with respect to
+computational time on summarized microarray data. The quality of the
+segmentation result of both `fastseg` and `DNAcopy` depends strongly on
+the methods' parameters.\
+The data is a small subset of copy number calls which were produced by
+the `cn.farms` algorithm [@Clevert:11] from an Affymetrix SNP microarray
+experiment of a HapMap sample.
+
+```{r}
+data(fastsegData)
+system.time(res <- fastseg(fastsegData))
+```
+
+::: center
+```{r echo=TRUE, fig=TRUE}
+segPlot(fastsegData,res, plot.type="w")
+```
+:::
+
+```{r message=FALSE}
+library(DNAcopy)
+cna <- DNAcopy::CNA(fastsegData,chrom="chr1",maploc=1:length(fastsegData))
+system.time(res2 <- DNAcopy::segment(cna))
+```
+
+::: center
+```{r echo=TRUE, fig=TRUE}
+plot(res2, plot.type="w", xmaploc=TRUE)
+```
+:::
+
+# Future Extensions
+
+We are planning to program a parallelized version of this package.
+Furthermore we will enhance the plot functions by our own.
+
+# How to cite this package
+
+If you use this package for research that is published later, you are
+kindly asked to cite it as follows: [@Klambauer:12].
+
+To obtain BibTeX entries of the two references, you can enter the
+following into your R session: 
+
+```{r eval=FALSE}
+toBibtex(citation("fastseg"))
+```
+
+[^1]: <http://www.nature.com/ng/journal/v29/n3/suppinfo/ng754_S1.html>
