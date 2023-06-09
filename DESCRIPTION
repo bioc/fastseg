@@ -1,6 +1,10 @@
 Package: fastseg
 Maintainer: Alexander Blume <alex.gos90@gmail.com>
 Author: Guenter Klambauer
+Authors@R: c(
+    person("Guenter", "Klambauer", role = "aut"),
+    person("Alexander", "Blume",
+        email = "alex.gos90@gmail.com", role = "cre"))
 License: LGPL (>= 2.0)
 Type: Package
 Title: fastseg - a fast segmentation algorithm
@@ -24,7 +28,8 @@ Version: 1.47.0
 URL: http://www.bioinf.jku.at/software/fastseg/index.html
 Depends: R (>= 2.13), GenomicRanges, Biobase
 Imports: methods, graphics, grDevices, stats, BiocGenerics, S4Vectors, IRanges
-Suggests: DNAcopy, oligo
+Suggests: DNAcopy, oligo, BiocStyle, knitr
 Collate: 'roxygen.R' 'toDnaCopy.R' 'fastseg.R' 'segPlot.R'
 biocViews: Classification, CopyNumberVariation
 RoxygenNote: 7.2.0
+VignetteBuilder: knitr
