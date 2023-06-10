@@ -202,7 +202,7 @@ Or alternatively:
 
 ::: center
 ```{r fig.height=10, fig.width=10, message=FALSE, fig=TRUE}
-invisible(segPlot(gr, res, plot.type="s"))
+segPlot(gr,res, plot.type="s")
 ```
 :::
 
