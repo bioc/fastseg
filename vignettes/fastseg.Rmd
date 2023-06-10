@@ -25,7 +25,6 @@ reference-section-title: References
 link-citations: yes
 ---
 
-
 ```{r echo=FALSE}
 options(width=80)
 set.seed(0)
@@ -34,42 +33,39 @@ fastsegVersion <- packageDescription("fastseg")$Version
 
 ## Scope and Purpose of this Document {#scope-and-purpose-of-this-document .unnumbered}
 
-This document is a user manual for the R package `fastseg`. It is only
-meant as a gentle introduction into how to use the basic functions
-implemented in this package. Not all features of the R package are
-described in full detail. Such details can be obtained from the
-documentation enclosed in the R package. Further note the following: (1)
-this is neither an introduction to segmentation algorithms; (2) this is
-not an introduction to R. If you lack the background for understanding
-this manual, you first have to read introductory literature on these
-subjects.
+This document is a user manual for the R package `r Biocpkg("fastseg")`. It is
+only meant as a gentle introduction into how to use the basic functions
+implemented in this package. Not all features of the R package are described in
+full detail. Such details can be obtained from the documentation enclosed in the
+R package. Further note the following: (1) this is neither an introduction to
+segmentation algorithms; (2) this is not an introduction to R. If you lack the
+background for understanding this manual, you first have to read introductory
+literature on these subjects.
 
 # Introduction
 
-`fastseg` implements a very fast and efficient segmentation algorithm.
-It has similar functionality as `DNACopy` [@Olshen:04] but is
-considerably faster and more flexible. `fastseg` can segment data
-stemming from DNA microarrays and data stemming from next generation
-sequencing for example to detect copy number segments. Further it can
-segment data stemming from RNA microarrays like tiling arrays to
-identify transcripts. Most generally, it can segment data given as a
-matrix or as a vector. Various data formats can be used as input to
-`fastseg` like expression set objects for microarrays or GRanges for
-sequencing data.
+`r Biocpkg("fastseg")` implements a very fast and efficient segmentation
+algorithm. It has similar functionality as `r Biocpkg("DNACopy")` [@Olshen:04]
+but is considerably faster and more flexible. `r Biocpkg("fastseg")` can segment
+data stemming from DNA microarrays and data stemming from next generation
+sequencing for example to detect copy number segments. Further it can segment
+data stemming from RNA microarrays like tiling arrays to identify transcripts.
+Most generally, it can segment data given as a matrix or as a vector. Various
+data formats can be used as input to `r Biocpkg("fastseg")` like expression set
+objects for microarrays or GRanges for sequencing data.
 
-The segmentation criterion of `fastseg` is based on a statistical test
-in a Bayesian framework, namely the cyber t-test [@Baldi:01]. The
-speed-up stems from the facts, that sampling is not necessary in for
-`fastseg` and that a dynamic programming approach is used for
+The segmentation criterion of `r Biocpkg("fastseg")` is based on a statistical
+test in a Bayesian framework, namely the cyber t-test [@Baldi:01]. The speed-up
+stems from the facts, that sampling is not necessary in for 
+`r Biocpkg("fastseg")` and that a dynamic programming approach is used for
 calculation of the segments' first and higher order moments.
 
-For further information regarding the algorithm and its assessment see
-the fastseg homepage at
-<http://www.bioinf.jku.at/software/fastseg/fastseg.html>
+For further information regarding the algorithm and its assessment see the
+fastseg homepage at http://www.bioinf.jku.at/software/fastseg/fastseg.html
 
 # Getting started
 
-To load the package, enter the following in your R session: 
+To load the package, enter the following in your R session: 
 
 ```{r message=FALSE}
 library(fastseg)
@@ -77,10 +73,10 @@ library(fastseg)
 
 ## Data
 
-According to the DNAcopy package from bioconductor we selected a subset
-of the data set presented in [@Snijders:01]. This data set will be
-called `coriell`. The data correspond to two array CGH studies of
-fibroblast cell strains. [^1] In particular, the studies **GM05296** and
+According to the `r Biocpkg("DNAcopy")` package from bioconductor we selected a
+subset of the data set presented in [@Snijders:01]. This data set will be called
+`coriell`. The data correspond to two array CGH studies of fibroblast cell
+strains. [^1] In particular, the studies **GM05296** and
 **GM13330** were chosen. After selecting only the mapped data from
 chromosomes 1-22 and X, there are 2271 data points.
 
@@ -97,15 +93,15 @@ chrom <- coriell$Chromosome
 maploc <- coriell$Position
 ```
 
-The main functions of the package are `fastseg` and `toDNAcopyObj`. The
-first on runs the segmentation algorithm and the latter converts the
-segmentation results the a DNAcopy object which will be quite helpful
-for plot functions.
+The main functions of the package are `fastseg` and `toDNAcopyObj`. The first on
+runs the segmentation algorithm and the latter converts the segmentation results
+the a `r Biocpkg("DNAcopy")` object which will be quite helpful for plot
+functions.
 
 ## File formats
 
-The package can handle different file formats: GRanges, ExpressionSet
-objects, matrix or a vector.
+The package can handle different file formats: GRanges, ExpressionSet objects,
+matrix or a vector.
 
 ### Vector
 
@@ -114,7 +110,6 @@ data2 <- data[, 1]
 res <- fastseg(data2)
 head(res)
 ```
-
 
 ### Matrix
 
@@ -183,7 +178,7 @@ head(res)
 
 ## Plotting the segmentation results
 
-For plotting the data we have to generate an `DNAcopy` object out of the
+For plotting the data we have to generate an `r Biocpkg("DNAcopy")` object out of the
 segmentation results:
 
 ```{r}
@@ -195,7 +190,7 @@ colnames(mcols(gr)) <- samplenames
 res <- fastseg(gr,segMedianT=0.2)
 ```
 
-The plotting is done via the `plot` function of `DNAcopy`:
+The plotting is done via the `plot` function of `r Biocpkg("DNAcopy")`:
 
 ::: center
 ```{r fig=TRUE}
@@ -206,20 +201,19 @@ segPlot(gr,res, plot.type="w")
 Or alternatively:
 
 ::: center
-```{r fig=TRUE, fig.height=10, fig.width=10}
-segPlot(gr,res, plot.type="s")
+```{r fig.height=10, fig.width=10, message=FALSE, fig=TRUE}
+invisible(segPlot(gr, res, plot.type="s"))
 ```
 :::
 
 ## Performance of the method
 
-Here we show that `fastseg` outperforms `DNAcopy` with respect to
-computational time on summarized microarray data. The quality of the
-segmentation result of both `fastseg` and `DNAcopy` depends strongly on
-the methods' parameters.\
-The data is a small subset of copy number calls which were produced by
-the `cn.farms` algorithm [@Clevert:11] from an Affymetrix SNP microarray
-experiment of a HapMap sample.
+Here we show that `r Biocpkg("fastseg")` outperforms `r Biocpkg("DNAcopy")` with
+respect to computational time on summarized microarray data. The quality of the
+segmentation result of both `r Biocpkg("fastseg")` and `r Biocpkg("DNAcopy")`
+depends strongly on the methods' parameters.\ The data is a small subset of copy
+number calls which were produced by the `cn.farms` algorithm [@Clevert:11] from
+an Affymetrix SNP microarray experiment of a HapMap sample.
 
 ```{r}
 data(fastsegData)
@@ -254,7 +248,7 @@ Furthermore we will enhance the plot functions by our own.
 If you use this package for research that is published later, you are
 kindly asked to cite it as follows: [@Klambauer:12].
 
-To obtain BibTeX entries of the two references, you can enter the
+To obtain BibTeX entries of the two references, you can enter the
 following into your R session: 
 
 ```{r eval=FALSE}
