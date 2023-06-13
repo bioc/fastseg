@@ -26,7 +26,7 @@ link-citations: yes
 csl: bioinformatics.csl
 ---
 
-## Scope and Purpose of this Document {#scope-and-purpose-of-this-document .unnumbered}
+**Scope and Purpose of this Document**
 
 This document is a user manual for the R package `r Biocpkg("fastseg")`. It is
 only meant as a gentle introduction into how to use the basic functions
