@@ -1,6 +1,4 @@
 Package: fastseg
-Maintainer: Alexander Blume <alex.gos90@gmail.com>
-Author: Guenter Klambauer
 Authors@R: c(
     person("Guenter", "Klambauer", role = "aut"),
     person("Alexander", "Blume",
