@@ -91,7 +91,7 @@ maploc <- coriell$Position
 
 The main functions of the package are `fastseg` and `toDNAcopyObj`. The first on
 runs the segmentation algorithm and the latter converts the segmentation results
-the a `r Biocpkg("DNAcopy")` object which will be quite helpful for plot
+the a *DNAcopy* object which will be quite helpful for plot
 functions.
 
 ## File formats
@@ -174,7 +174,7 @@ head(res)
 
 ## Plotting the segmentation results
 
-For plotting the data we have to generate an `r Biocpkg("DNAcopy")` object out
+For plotting the data we have to generate an *DNAcopy* object out
 of the segmentation results:
 
 ```{r}
