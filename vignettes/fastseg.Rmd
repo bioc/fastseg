@@ -4,6 +4,7 @@ authors:
   - name: "Günter Klambauer"
     affiliation: "Institute of Bioinformatics, Johannes Kepler University Linz
                   Altenberger Str. 69, 4040 Linz, Austria"
+    email: "klambauer@bioinf.jku.at"
   - name: "Andreas Mitterecker"
     affiliation: "Institute of Bioinformatics, Johannes Kepler University Linz
                   Altenberger Str. 69, 4040 Linz, Austria"
@@ -77,7 +78,7 @@ are 2271 data points.
 
 To prepare the data for our examples we execute the following code:
 
-```{r echo=TRUE}
+```{r}
 data(coriell)
 head(coriell)
 
@@ -187,13 +188,13 @@ res <- fastseg(gr,segMedianT=0.2)
 
 The plotting is done via the `plot` function of `r Biocpkg("DNAcopy")`:
 
-```{r fig=TRUE}
+```{r}
 segPlot(gr,res, plot.type="w")
 ```
 
 Or alternatively:
 
-```{r fig.height=10, fig.width=10, message=FALSE, fig=TRUE}
+```{r fig.height=10, fig.width=10, message=FALSE}
 segPlot(gr, res, plot.type="s")
 ```
 
@@ -202,16 +203,18 @@ segPlot(gr, res, plot.type="s")
 Here we show that `r Biocpkg("fastseg")` outperforms `r Biocpkg("DNAcopy")` with
 respect to computational time on summarized microarray data. The quality of the
 segmentation result of both `r Biocpkg("fastseg")` and `r Biocpkg("DNAcopy")`
-depends strongly on the methods' parameters.\ The data is a small subset of copy
-number calls which were produced by the `cn.farms` algorithm @Clevert:11 from
-an Affymetrix SNP microarray experiment of a HapMap sample.
+depends strongly on the methods' parameters.
+
+The data is a small subset of copy number calls which were produced by the
+`cn.farms` algorithm @Clevert:11 from an Affymetrix SNP microarray experiment of
+a HapMap sample.
 
 ```{r}
 data(fastsegData)
 system.time(res <- fastseg(fastsegData))
 ```
 
-```{r echo=TRUE, fig=TRUE}
+```{r}
 segPlot(fastsegData,res, plot.type="w")
 ```
 
@@ -221,14 +224,14 @@ cna <- DNAcopy::CNA(fastsegData,chrom="chr1",maploc=1:length(fastsegData))
 system.time(res2 <- DNAcopy::segment(cna))
 ```
 
-```{r echo=TRUE, fig=TRUE}
+```{r}
 plot(res2, plot.type="w", xmaploc=TRUE)
 ```
 
 # Future Extensions
 
-We are planning to program a parallelized version of this package.
-Furthermore we will enhance the plot functions by our own.
+We are planning to program a parallelized version of this package. Furthermore
+we will enhance the plot functions by our own.
 
 # How to cite this package
 
