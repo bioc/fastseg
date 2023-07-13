@@ -1,6 +1,7 @@
 Package: fastseg
 Authors@R: c(
         person("Guenter", "Klambauer", role = "aut"),
+        person("Sonali", "Kumari", role = "ctb"),
         person("Alexander", "Blume",
                 email = "alex.gos90@gmail.com", role = "cre"))
 License: LGPL (>= 2.0)
