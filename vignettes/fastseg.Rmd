@@ -10,6 +10,17 @@ authors:
                   Altenberger Str. 69, 4040 Linz, Austria"
 date: "`r format(Sys.time(), '%B %d , %Y')`"
 package: fastseg
+abstract: |+
+  **Scope and Purpose of this Document**
+
+  This document is a user manual for the R package `r Biocpkg("fastseg")`. It is
+  only meant as a gentle introduction into how to use the basic functions
+  implemented in this package. Not all features of the R package are described in
+  full detail. Such details can be obtained from the documentation enclosed in the
+  R package. Further note the following: (1) this is neither an introduction to
+  segmentation algorithms; (2) this is not an introduction to R. If you lack the
+  background for understanding this manual, you first have to read introductory
+  literature on these subjects.
 vignette: >
   %\VignetteIndexEntry{An R Package for fast segmentation}
   %\VignetteIndexEntry{fastseg: Manual for the R package}
