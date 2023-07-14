@@ -57,7 +57,7 @@ stems from the facts, that sampling is not necessary in for
 calculation of the segments' first and higher order moments.
 
 For further information regarding the algorithm and its assessment see the
-fastseg homepage at http://www.bioinf.jku.at/software/fastseg/fastseg.html
+fastseg homepage at http://www.bioinf.jku.at/software/fastseg/index.html
 
 # Getting started
 
