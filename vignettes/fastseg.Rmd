@@ -99,22 +99,6 @@ functions.
 The package can handle different file formats: GRanges, ExpressionSet objects,
 matrix or a vector.
 
-### Vector
-
-```{r}
-data2 <- data[, 1]
-res <- fastseg(data2)
-head(res)
-```
-
-### Matrix
-
-```{r}
-data2 <- data[1:400, ]
-res <- fastseg(data2)
-head(res)
-```
-
 ### GRanges objects
 
 ```{r}
