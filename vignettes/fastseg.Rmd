@@ -41,7 +41,7 @@ csl: bioinformatics.csl
 # Introduction
 
 `r Biocpkg("fastseg")` implements a very fast and efficient segmentation
-algorithm. It has similar functionality as `r Biocpkg("DNACopy")` [@Olshen:04]
+algorithm. It has similar functionality as `r Biocpkg("DNAcopy")` [@Olshen:04]
 but is considerably faster and more flexible. `r Biocpkg("fastseg")` can segment
 data stemming from DNA microarrays and data stemming from next generation
 sequencing for example to detect copy number segments. Further it can segment
