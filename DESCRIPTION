@@ -25,6 +25,7 @@ Description: fastseg implements a very fast and efficient segmentation
         first and higher order moments.
 Version: 1.53.1
 URL: http://www.bioinf.jku.at/software/fastseg/index.html
+BugReports: https://github.com/alexg9010/fastseg/issues
 Depends: R (>= 2.13), GenomicRanges, Biobase
 Imports: methods, graphics, grDevices, stats, BiocGenerics, S4Vectors, IRanges
 Suggests: DNAcopy, oligo, BiocStyle, knitr
