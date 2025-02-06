@@ -24,8 +24,8 @@ abstract: |+
 vignette: >
   %\VignetteIndexEntry{An R Package for fast segmentation}
   %\VignetteIndexEntry{fastseg: Manual for the R package}
-  %\VignetteDepends{fastseg}
   %\VignettePackage{fastseg}
+  %\VignetteDepends{DNAcopy, BiocStyle}
   %\VignetteKeywords{copy number analysis, segmentation,
   % CNV, copy number variant}
   %\VignetteEngine{knitr::rmarkdown}
@@ -123,17 +123,17 @@ head(res)
 
 ### ExpressionSet objects
 
-```{r message=FALSE}
-library(oligo)
-eSet <- new("ExpressionSet")
+```{r message=FALSE, eval=require(oligo)}
+library("Biobase")
+eSet <- Biobase::ExpressionSet()
 assayData(eSet) <- list(intensity=data)
 
-featureData(eSet) <- new("AnnotatedDataFrame", 
+featureData(eSet) <- AnnotatedDataFrame(
         data=data.frame(
                 chrom = paste("chr",chrom,sep=""),
                 start = maploc, 
                 end   = maploc,stringsAsFactors=FALSE))
-phenoData(eSet) <- new("AnnotatedDataFrame", 
+phenoData(eSet) <- AnnotatedDataFrame(
         data=data.frame(samples=samplenames))
 sampleNames(eSet) <- samplenames
 res <- fastseg(eSet)

@@ -28,7 +28,7 @@ URL: http://www.bioinf.jku.at/software/fastseg/index.html
 BugReports: https://github.com/alexg9010/fastseg/issues
 Depends: R (>= 2.13), GenomicRanges, Biobase
 Imports: methods, graphics, grDevices, stats, BiocGenerics, S4Vectors, IRanges
-Suggests: DNAcopy, oligo, BiocStyle, knitr
+Suggests: DNAcopy, BiocStyle, knitr
 Collate: 'roxygen.R' 'toDnaCopy.R' 'fastseg.R' 'segPlot.R'
 biocViews: Classification, CopyNumberVariation
 RoxygenNote: 7.2.0
